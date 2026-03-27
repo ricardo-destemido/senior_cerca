@@ -27,43 +27,178 @@
 
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
 
+    /* ══════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════ */
     #app {
       display: grid;
       grid-template-rows: 64px 1fr;
-      grid-template-columns: 320px 1fr;
       height: 100vh;
+      overflow: hidden;
     }
 
     /* ── Header ── */
     header {
-      grid-column: 1 / -1;
       display: flex; align-items: center; gap: 12px;
       padding: 0 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
-      z-index: 999;
+      z-index: 999; flex-shrink: 0;
     }
     .logo-mark {
-      width: 32px; height: 32px;
-      background: var(--accent);
+      width: 32px; height: 32px; background: var(--accent);
       clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .logo-mark svg { width: 16px; fill: white; }
     header h1 { font-weight: 800; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
     header h1 a { color: white; text-decoration: none; }
-    .header-badge {
-      margin-left: auto;
+
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    .badge {
       font-family: var(--mono); font-size: .65rem; color: var(--muted);
       background: var(--border); padding: 3px 10px; border-radius: 2px; letter-spacing: .05em;
     }
+    #user-badge {
+      font-family: var(--mono); font-size: .65rem; color: var(--success);
+      background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.25);
+      padding: 3px 10px; border-radius: 2px; letter-spacing: .04em; display: none;
+    }
 
-    /* ── Sidebar ── */
+    /* ── Breadcrumb nav ── */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: .7rem; color: var(--muted);
+    }
+    .breadcrumb-item { cursor: pointer; transition: color .15s; }
+    .breadcrumb-item:hover { color: var(--accent2); }
+    .breadcrumb-item.active { color: var(--text); cursor: default; }
+    .breadcrumb-sep { color: var(--border); }
+
+    /* ── Views ── */
+    .view { display: none; height: 100%; overflow: hidden; }
+    .view.active { display: flex; }
+
+    /* ══════════════════════════════════════
+       VIEW: LIST (DataTable)
+    ══════════════════════════════════════ */
+    #view-list {
+      flex-direction: column;
+      padding: 28px 32px;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .list-toolbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+
+    .list-toolbar h2 {
+      font-size: 1.3rem; font-weight: 800; letter-spacing: .04em; flex: 1;
+    }
+
+    .search-input {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+      padding: 9px 14px; color: var(--text); font-family: var(--mono); font-size: .8rem;
+      outline: none; transition: border-color .2s; width: 220px;
+    }
+    .search-input:focus { border-color: var(--accent2); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 9px 18px; border: none; border-radius: 4px; cursor: pointer;
+      font-family: var(--sans); font-size: .8rem; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase; transition: all .18s; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #c8303b; transform: translateY(-1px); }
+    .btn-success { background: #166534; color: var(--success); border: 1px solid #166534; }
+    .btn-success:hover:not(:disabled) { background: #14532d; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); transform: translateY(-1px); }
+    .btn-icon { padding: 6px 10px; font-size: .75rem; }
+
+    /* Table */
+    .table-wrap {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+      overflow: hidden; flex: 1;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead { background: var(--bg); }
+    th {
+      padding: 12px 16px; text-align: left;
+      font-family: var(--mono); font-size: .65rem; letter-spacing: .12em;
+      color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 13px 16px; font-size: .85rem; border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .15s; }
+    tbody tr:hover { background: rgba(255,255,255,.02); }
+
+    .td-name { font-weight: 600; color: var(--text); }
+    .td-mono { font-family: var(--mono); font-size: .75rem; color: var(--muted); }
+    .td-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+    /* Empty / loading states */
+    .table-state {
+      padding: 48px 16px; text-align: center;
+      font-family: var(--mono); font-size: .8rem; color: var(--muted);
+    }
+    .spinner {
+      width: 28px; height: 28px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .7s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+    }
+    .pagination-info { font-family: var(--mono); font-size: .7rem; color: var(--muted); flex: 1; }
+    .page-btn {
+      width: 32px; height: 32px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); border-radius: 4px;
+      cursor: pointer; font-family: var(--mono); font-size: .75rem;
+      transition: all .15s; display: flex; align-items: center; justify-content: center;
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
+    .page-btn.current { background: var(--accent); border-color: var(--accent); color: #fff; cursor: default; }
+    .page-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+      padding: 12px 18px; font-family: var(--mono); font-size: .75rem;
+      color: var(--text); transform: translateY(80px); opacity: 0;
+      transition: all .3s; pointer-events: none; max-width: 320px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.ok   { border-color: rgba(74,222,128,.4); color: var(--success); }
+    #toast.err  { border-color: rgba(230,57,70,.4);  color: var(--accent); }
+
+    /* ══════════════════════════════════════
+       VIEW: MAP EDITOR
+    ══════════════════════════════════════ */
+    #view-map {
+      display: none;
+      grid-template-columns: 320px 1fr;
+    }
+    #view-map.active { display: grid; }
+
     aside {
-      background: var(--panel);
-      border-right: 1px solid var(--border);
-      padding: 20px 16px;
-      display: flex; flex-direction: column; gap: 18px;
+      background: var(--panel); border-right: 1px solid var(--border);
+      padding: 20px 16px; display: flex; flex-direction: column; gap: 18px;
       overflow-y: auto; z-index: 500;
     }
 
@@ -71,9 +206,7 @@
       font-family: var(--mono); font-size: .6rem; letter-spacing: .15em;
       color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
     }
-
     .input-group { display: flex; gap: 8px; }
-
     .cep-input {
       flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
       padding: 10px 14px; color: var(--text); font-family: var(--mono); font-size: .85rem;
@@ -81,17 +214,6 @@
     }
     .cep-input:focus { border-color: var(--accent); }
     .cep-input::placeholder { color: var(--muted); }
-
-    .btn {
-      padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer;
-      font-family: var(--sans); font-size: .8rem; font-weight: 600;
-      letter-spacing: .06em; text-transform: uppercase; transition: all .18s; white-space: nowrap;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #c8303b; transform: translateY(-1px); }
-    .btn-secondary { width: 100%; background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
-    .btn-secondary:hover { background: rgba(255,159,28,.08); transform: translateY(-1px); }
-    .btn-secondary.active { background: var(--accent2); color: #0b0e14; }
 
     #addr-result {
       font-size: .75rem; line-height: 1.6; color: var(--muted); font-family: var(--mono);
@@ -103,21 +225,13 @@
 
     .divider { height: 1px; background: var(--border); flex-shrink: 0; }
 
-    /* ── Fence list section ── */
-    .list-section {
-      display: flex; flex-direction: column; gap: 8px;
-      flex: 1; min-height: 0;
-    }
+    .btn-secondary { width: 100%; background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255,159,28,.08); transform: translateY(-1px); }
+    .btn-secondary.active { background: var(--accent2); color: #0b0e14; }
 
-    #fence-list {
-      display: flex; flex-direction: column; gap: 8px;
-      overflow-y: auto; flex: 1;
-    }
-
-    .fence-empty {
-      font-family: var(--mono); font-size: .7rem; color: var(--muted);
-      text-align: center; padding: 16px 0;
-    }
+    .list-section { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+    #fence-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+    .fence-empty { font-family: var(--mono); font-size: .7rem; color: var(--muted); text-align: center; padding: 16px 0; }
 
     .fence-item {
       background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
@@ -125,32 +239,16 @@
     }
     .fence-item:hover { border-color: var(--accent2); background: #0f1319; }
     .fence-item.selected { border-color: var(--accent); background: rgba(230,57,70,.06); }
-
-    .fence-item-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
-    }
-
-    .fence-name {
-      font-family: var(--sans); font-size: .8rem; font-weight: 600;
-      color: var(--text); display: flex; align-items: center; gap: 6px;
-    }
-
-    .fence-dot-color {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
-
-    .fence-coords {
-      font-family: var(--mono); font-size: .65rem; color: var(--muted); line-height: 1.8;
-    }
+    .fence-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .fence-name-label { font-family: var(--sans); font-size: .8rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .fence-dot-color { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .fence-coords { font-family: var(--mono); font-size: .65rem; color: var(--muted); line-height: 1.8; }
     .fence-coords span { color: var(--text); }
-
     .btn-delete {
-      background: transparent; border: none; cursor: pointer;
-      color: var(--muted); font-size: .9rem; padding: 2px 4px;
-      line-height: 1; transition: color .15s; border-radius: 3px;
+      background: transparent; border: none; cursor: pointer; color: var(--muted);
+      font-size: .9rem; padding: 2px 4px; line-height: 1; transition: color .15s; border-radius: 3px;
     }
     .btn-delete:hover { color: var(--accent); background: rgba(230,57,70,.1); }
-
     .btn-clear {
       width: 100%; background: transparent; border: 1px solid var(--border);
       color: var(--muted); border-radius: 4px; padding: 8px; cursor: pointer;
@@ -159,15 +257,26 @@
     }
     .btn-clear:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* Nome da cerca */
+    .fence-name-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 9px 12px; color: var(--text); font-family: var(--mono); font-size: .82rem;
+      outline: none; transition: border-color .2s;
+    }
+    .fence-name-input:focus { border-color: var(--accent2); }
+    .fence-name-input::placeholder { color: var(--muted); }
+
     .hint {
-      font-size: .7rem; font-family: var(--mono); color: var(--muted);
-      line-height: 1.6; padding: 10px 12px;
-      background: var(--bg); border: 1px dashed var(--border); border-radius: 4px;
-      flex-shrink: 0;
+      font-size: .7rem; font-family: var(--mono); color: var(--muted); line-height: 1.6;
+      padding: 10px 12px; background: var(--bg); border: 1px dashed var(--border); border-radius: 4px; flex-shrink: 0;
     }
     .hint strong { color: var(--accent2); }
 
-    /* ── Map ── */
+    /* Save bar */
+    .save-bar {
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
+
     #map { width: 100%; height: 100%; }
     .leaflet-container { font-family: var(--sans); }
   </style>
@@ -175,136 +284,356 @@
 <body>
 <div id="app">
 
+  <!-- ── Header ── -->
   <header>
     <div class="logo-mark">
       <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
     <h1><a href="https://destemidosistemas.com.br/" target="_blank">Destemido Sistemas</a></h1>
-    <span class="header-badge">GEOFENCE — LEAFLET</span>
-    <span id="user-badge" style="
-      margin-left: 12px;
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--success);
-      background: rgba(74,222,128,.08);
-      border: 1px solid rgba(74,222,128,.25);
-      padding: 3px 10px;
-      border-radius: 2px;
-      letter-spacing: .04em;
-      display: none;
-    "></span>
+
+    <div class="breadcrumb" id="breadcrumb" style="margin-left:16px;">
+      <span class="breadcrumb-item active" data-view="list">Cercas</span>
+    </div>
+
+    <div class="header-right">
+      <span class="badge">GEOFENCE — LEAFLET</span>
+      <span id="user-badge"></span>
+    </div>
   </header>
 
-  <aside>
+  <!-- ══════════════════════════════════════
+       VIEW: LIST
+  ══════════════════════════════════════ -->
+  <div class="view active" id="view-list">
 
-    <div>
-      <p class="section-label">Localização / CEP</p>
-      <div class="input-group">
-        <input id="cep-input" class="cep-input" type="text" placeholder="00000-000" maxlength="9" />
-        <button id="btn-search" class="btn btn-primary">IR</button>
+    <div class="list-toolbar">
+      <h2>Cercas cadastradas</h2>
+      <input class="search-input" id="search-input" placeholder="Buscar por nome…" />
+      <button class="btn btn-success" id="btn-new">＋ Nova Cerca</button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="fence-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Raio (m)</th>
+            <th style="text-align:right">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="6"><div class="table-state"><div class="spinner"></div>Aguardando autenticação SeniorX…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="pagination-info" id="pagination-info"></span>
+      <div id="pagination-btns" style="display:flex;gap:6px;align-items:center;"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       VIEW: MAP EDITOR
+  ══════════════════════════════════════ -->
+  <div class="view" id="view-map">
+
+    <aside>
+
+      <div>
+        <p class="section-label">Nome da Cerca</p>
+        <input id="fence-name-input" class="fence-name-input" placeholder="Ex: Sede Principal" />
       </div>
-      <div style="height:10px"></div>
-      <div id="addr-result">Digite um CEP para iniciar.</div>
-    </div>
 
-    <div class="divider"></div>
+      <div class="divider"></div>
 
-    <div>
-      <p class="section-label">Geofence</p>
-      <button id="btn-fence" class="btn btn-secondary">＋ Add Cerca</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="list-section">
-      <p class="section-label">Cercas (<span id="fence-count">0</span>)</p>
-      <div id="fence-list">
-        <p class="fence-empty">Nenhuma cerca adicionada.</p>
+      <div>
+        <p class="section-label">Localização / CEP</p>
+        <div class="input-group">
+          <input id="cep-input" class="cep-input" type="text" placeholder="00000-000" maxlength="9" />
+          <button id="btn-search" class="btn btn-primary" style="padding:10px 14px;">IR</button>
+        </div>
+        <div style="height:10px"></div>
+        <div id="addr-result">Digite um CEP para navegar no mapa.</div>
       </div>
-      <button class="btn-clear" id="btn-clear-all">✕ Remover todas</button>
-    </div>
 
-    <div class="divider"></div>
+      <div class="divider"></div>
 
-    <div class="hint">
-      <strong>Como usar:</strong><br/>
-      1. Busque um CEP.<br/>
-      2. Clique em <strong>Add Cerca</strong>.<br/>
-      3. Clique no mapa para posicionar.<br/>
-      4. <strong>Scroll</strong> sobre a cerca p/ ajustar raio.<br/>
-      5. <strong>Arraste</strong> para reposicionar.<br/>
-      6. Clique na lista para selecionar/centralizar.
-    </div>
+      <div>
+        <p class="section-label">Geofence</p>
+        <button id="btn-fence" class="btn btn-secondary">＋ Add Cerca</button>
+      </div>
 
-  </aside>
+      <div class="divider"></div>
 
-  <div id="map"></div>
+      <div class="list-section">
+        <p class="section-label">Cercas (<span id="fence-count">0</span>)</p>
+        <div id="fence-list">
+          <p class="fence-empty">Nenhuma cerca adicionada.</p>
+        </div>
+        <button class="btn-clear" id="btn-clear-all">✕ Remover todas</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="save-bar">
+        <button class="btn btn-ghost" id="btn-back" style="flex:1;">← Voltar</button>
+        <button class="btn btn-primary" id="btn-save" style="flex:2;">💾 Salvar</button>
+      </div>
+
+      <div class="hint">
+        <strong>Como usar:</strong><br/>
+        1. Dê um nome à cerca.<br/>
+        2. Busque um CEP p/ navegar.<br/>
+        3. Clique em <strong>Add Cerca</strong>.<br/>
+        4. Clique no mapa para posicionar.<br/>
+        5. <strong>Scroll</strong> para ajustar raio.<br/>
+        6. <strong>Arraste</strong> para reposicionar.
+      </div>
+
+    </aside>
+
+    <div id="map"></div>
+
+  </div>
 
 </div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
 <script>
-function initApp() {
+// ══════════════════════════════════════════════════
+//  GLOBALS
+// ══════════════════════════════════════════════════
+const PAGE_SIZE    = 10;
+let seniorToken    = null;
+let servicesUrl    = null;
+let currentPage    = 0;      // zero-based
+let totalRecords   = 0;
+let searchQuery    = '';
+let editingFence   = null;   // fence object being edited (null = new)
+let mapInitialized = false;
 
-  // ── Token SeniorX via postMessage ───────────────
-  window.addEventListener('message', (event) => {
-    const data = event.data;
-    if (!data?.token) return;
+// ── SeniorX postMessage ──────────────────────────
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data?.token) return;
 
-    const { fullName, email, tenantName, access_token } = data.token;
-    const servicesUrl = data.servicesUrl;
-    const pageName    = data.name;
+  const { fullName, email, tenantName, access_token } = data.token;
+  servicesUrl  = data.servicesUrl || 'https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/';
+  seniorToken  = access_token;
 
-    console.log('[SeniorX] Dados recebidos:', data);
-    console.log('[SeniorX] access_token:', access_token);
-    console.log('[SeniorX] Usuário:', fullName, '|', email);
-    console.log('[SeniorX] Tenant:', tenantName);
-    console.log('[SeniorX] servicesUrl:', servicesUrl);
-    console.log('[SeniorX] Page name:', pageName);
+  console.log('[SeniorX] Dados recebidos:', data);
+  console.log('[SeniorX] access_token:', access_token);
+  console.log('[SeniorX] servicesUrl:', servicesUrl);
 
-    // Exibe usuário na header
-    const name = decodeURIComponent((fullName || '').replace(/\+/g, ' '));
-    const userBadge = document.getElementById('user-badge');
-    if (userBadge) {
-      userBadge.textContent = `${name} · ${tenantName}`;
-      userBadge.title = email;
-      userBadge.style.display = 'inline';
+  const name = decodeURIComponent((fullName || '').replace(/\+/g, ' '));
+  const ub   = document.getElementById('user-badge');
+  ub.textContent = `${name} · ${tenantName}`;
+  ub.title       = email;
+  ub.style.display = 'inline';
+
+  // Load first page
+  loadFences(0);
+});
+
+// ══════════════════════════════════════════════════
+//  ROUTING (SPA)
+// ══════════════════════════════════════════════════
+function navigate(view, opts = {}) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  updateBreadcrumb(view, opts.label);
+
+  if (view === 'map') {
+    if (!mapInitialized) { initMap(); mapInitialized = true; }
+    setupMapEditor(opts.fence || null);
+  }
+  if (view === 'list') {
+    loadFences(currentPage);
+  }
+}
+
+function updateBreadcrumb(view, label) {
+  const bc = document.getElementById('breadcrumb');
+  if (view === 'list') {
+    bc.innerHTML = `<span class="breadcrumb-item active">Cercas</span>`;
+  } else {
+    bc.innerHTML = `
+      <span class="breadcrumb-item" onclick="navigate('list')">Cercas</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item active">${label || 'Editor'}</span>`;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  API
+// ══════════════════════════════════════════════════
+async function apiFetch(path, options = {}) {
+  const base    = (servicesUrl || 'https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/').replace(/\/$/, '');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(seniorToken ? { 'Authorization': `Bearer ${seniorToken}` } : {}),
+    ...(options.headers || {}),
+  };
+  const res = await fetch(`${base}${path}`, { ...options, headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ══════════════════════════════════════════════════
+//  LIST VIEW
+// ══════════════════════════════════════════════════
+let searchTimer = null;
+document.getElementById('search-input').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchQuery = e.target.value.trim();
+  searchTimer = setTimeout(() => loadFences(0), 400);
+});
+
+document.getElementById('btn-new').addEventListener('click', () => {
+  editingFence = null;
+  navigate('map', { label: 'Nova Cerca' });
+});
+
+async function loadFences(page) {
+  currentPage = page;
+  const offset = page * PAGE_SIZE;
+  const tbody  = document.getElementById('table-body');
+
+  tbody.innerHTML = `<tr><td colspan="6"><div class="table-state"><div class="spinner"></div>Carregando…</div></td></tr>`;
+  renderPagination(0);
+
+  if (!seniorToken) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="table-state">Aguardando autenticação SeniorX…</div></td></tr>`;
+    return;
+  }
+
+  try {
+    let url = `/hcm/pontomobile/entities/fence?offset=${offset}&size=${PAGE_SIZE}&displayfields=name,latitude,longitude,radius`;
+    if (searchQuery) url += `&filter=name like '%25${encodeURIComponent(searchQuery)}%25'`;
+
+    const data = await apiFetch(url);
+    const rows = data.entities || data.contents || data.result || data || [];
+    totalRecords = data.totalElements ?? data.total ?? rows.length;
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="table-state">Nenhuma cerca encontrada.</div></td></tr>`;
+      renderPagination(0);
+      return;
     }
-  });
 
+    tbody.innerHTML = rows.map((f, i) => `
+      <tr>
+        <td class="td-mono">${offset + i + 1}</td>
+        <td class="td-name">${esc(f.name || '—')}</td>
+        <td class="td-mono">${f.latitude  != null ? Number(f.latitude).toFixed(6)  : '—'}</td>
+        <td class="td-mono">${f.longitude != null ? Number(f.longitude).toFixed(6) : '—'}</td>
+        <td class="td-mono">${f.radius    != null ? f.radius : '—'}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-ghost btn-icon" onclick="editFence(${JSON.stringify(JSON.stringify(f))})">✏️ Editar</button>
+          </div>
+        </td>
+      </tr>`).join('');
 
-  const COLORS = ['#e63946','#ff9f1c','#4ade80','#60a5fa','#c084fc','#f472b6','#fb923c','#34d399'];
-  let colorIndex   = 0;
-  let fenceMode    = false;
-  let fences       = [];          // { id, circle, color, latlng, radius }
-  let selectedId   = null;
-  let isDragging   = false;
-  let dragStart    = null;
-  let activeFence  = null;
+    renderPagination(totalRecords);
 
-  // ── Map ──────────────────────────────────────────
-  const map = L.map('map', { center: [-15.7934, -47.8823], zoom: 5 });
+  } catch (err) {
+    console.error('[API] Erro ao carregar cercas:', err);
+    tbody.innerHTML = `<tr><td colspan="6"><div class="table-state">Erro ao carregar dados: ${err.message}</div></td></tr>`;
+  }
+}
+
+function editFence(jsonStr) {
+  editingFence = JSON.parse(jsonStr);
+  navigate('map', { label: `Editando: ${editingFence.name || 'Cerca'}`, fence: editingFence });
+}
+
+function renderPagination(total) {
+  const info  = document.getElementById('pagination-info');
+  const btns  = document.getElementById('pagination-btns');
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const offset = currentPage * PAGE_SIZE;
+
+  info.textContent = total
+    ? `Exibindo ${offset + 1}–${Math.min(offset + PAGE_SIZE, total)} de ${total} registros`
+    : '';
+
+  btns.innerHTML = '';
+
+  const prev = document.createElement('button');
+  prev.className = 'page-btn'; prev.textContent = '‹';
+  prev.disabled = currentPage === 0;
+  prev.onclick = () => loadFences(currentPage - 1);
+  btns.appendChild(prev);
+
+  const maxVisible = 7;
+  let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+  let end   = Math.min(pages - 1, start + maxVisible - 1);
+  if (end - start < maxVisible - 1) start = Math.max(0, end - maxVisible + 1);
+
+  for (let p = start; p <= end; p++) {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (p === currentPage ? ' current' : '');
+    b.textContent = p + 1;
+    if (p !== currentPage) b.onclick = () => loadFences(p);
+    btns.appendChild(b);
+  }
+
+  const next = document.createElement('button');
+  next.className = 'page-btn'; next.textContent = '›';
+  next.disabled = currentPage >= pages - 1;
+  next.onclick = () => loadFences(currentPage + 1);
+  btns.appendChild(next);
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════
+//  MAP VIEW
+// ══════════════════════════════════════════════════
+const COLORS = ['#e63946','#ff9f1c','#4ade80','#60a5fa','#c084fc','#f472b6','#fb923c','#34d399'];
+let colorIndex  = 0;
+let map         = null;
+let fences      = [];
+let selectedId  = null;
+let isDragging  = false;
+let dragStart   = null;
+let activeFence = null;
+let fenceMode   = false;
+
+function initMap() {
+  map = L.map('map', { center: [-15.7934, -47.8823], zoom: 5 });
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles &copy; Esri', maxZoom: 19,
   }).addTo(map);
 
-  // ── CEP Search ───────────────────────────────────
-  const cepInput   = document.getElementById('cep-input');
-  const btnSearch  = document.getElementById('btn-search');
-  const addrResult = document.getElementById('addr-result');
+  map.on('click', (e) => {
+    if (!fenceMode) return;
+    addFence(e.latlng, 120);
+    deactivateFenceMode();
+  });
 
-  function formatCep(v) {
-    v = v.replace(/\D/g,'').slice(0,8);
-    if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5);
-    return v;
-  }
+  // CEP Search
+  const cepInput  = document.getElementById('cep-input');
+  const btnSearch = document.getElementById('btn-search');
+
+  function formatCep(v) { v = v.replace(/\D/g,'').slice(0,8); if (v.length>5) v=v.slice(0,5)+'-'+v.slice(5); return v; }
   cepInput.addEventListener('input', () => { cepInput.value = formatCep(cepInput.value); });
-  cepInput.addEventListener('keydown', e => { if (e.key === 'Enter') btnSearch.click(); });
-
+  cepInput.addEventListener('keydown', e => { if (e.key==='Enter') btnSearch.click(); });
   btnSearch.addEventListener('click', async () => {
     const cep = cepInput.value.replace(/\D/g,'');
-    if (cep.length !== 8) { setAddr('CEP inválido. Use 8 dígitos.','err'); return; }
-    btnSearch.textContent = '...'; btnSearch.style.pointerEvents = 'none';
-    setAddr('Buscando...','');
+    if (cep.length !== 8) { setAddr('CEP inválido.','err'); return; }
+    btnSearch.textContent = '...'; btnSearch.disabled = true;
+    setAddr('Buscando…','');
     try {
       const vr = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const vd = await vr.json();
@@ -312,200 +641,237 @@ function initApp() {
       const q  = encodeURIComponent(`${vd.logradouro||''} ${vd.bairro||''} ${vd.localidade} ${vd.uf} Brasil`);
       const gr = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
       const gd = await gr.json();
-      if (!gd.length) { setAddr(`${vd.localidade} - ${vd.uf}\nSem coordenadas.`,'err'); return; }
+      if (!gd.length) { setAddr('Coordenadas não localizadas.','err'); return; }
       map.flyTo([parseFloat(gd[0].lat), parseFloat(gd[0].lon)], 16, { duration: 1.4 });
       setAddr([vd.logradouro,vd.bairro,vd.localidade,vd.uf].filter(Boolean).join(', '),'ok');
     } catch { setAddr('Erro de conexão.','err'); }
-    finally { btnSearch.textContent = 'IR'; btnSearch.style.pointerEvents = ''; }
+    finally { btnSearch.textContent='IR'; btnSearch.disabled=false; }
   });
 
-  function setAddr(txt, cls) { addrResult.textContent = txt; addrResult.className = cls; }
-
-  // ── Fence mode ───────────────────────────────────
-  const btnFence = document.getElementById('btn-fence');
-
-  btnFence.addEventListener('click', () => {
+  // Fence mode toggle
+  document.getElementById('btn-fence').addEventListener('click', () => {
     fenceMode = !fenceMode;
+    const btn = document.getElementById('btn-fence');
     if (fenceMode) {
-      btnFence.classList.add('active');
-      btnFence.textContent = '× Cancelar';
+      btn.classList.add('active'); btn.textContent = '× Cancelar';
       map.getContainer().style.cursor = 'crosshair';
-    } else {
-      deactivateFenceMode();
-    }
+    } else { deactivateFenceMode(); }
   });
-
-  function deactivateFenceMode() {
-    fenceMode = false;
-    btnFence.classList.remove('active');
-    btnFence.textContent = '＋ Add Cerca';
-    map.getContainer().style.cursor = '';
-  }
-
-  // ── Place circle ─────────────────────────────────
-  map.on('click', (e) => {
-    if (!fenceMode) return;
-
-    const color  = COLORS[colorIndex % COLORS.length];
-    colorIndex++;
-
-    const circle = L.circle(e.latlng, {
-      radius: 120, color, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
-    }).addTo(map);
-
-    const fence = { id: Date.now(), circle, color, latlng: e.latlng, radius: 120 };
-    fences.push(fence);
-
-    attachCircleEvents(fence);
-    selectedId = fence.id;
-    renderList();
-    deactivateFenceMode();
-  });
-
-  // ── Delete ───────────────────────────────────────
-  function deleteFence(id) {
-    const idx = fences.findIndex(f => f.id === id);
-    if (idx === -1) return;
-    map.removeLayer(fences[idx].circle);
-    fences.splice(idx, 1);
-    if (selectedId === id) selectedId = fences.length ? fences[fences.length-1].id : null;
-    renderList();
-  }
 
   document.getElementById('btn-clear-all').addEventListener('click', () => {
     fences.forEach(f => map.removeLayer(f.circle));
-    fences = []; selectedId = null;
-    renderList();
+    fences = []; selectedId = null; renderFenceList();
   });
 
-  // ── Render list ──────────────────────────────────
-  function renderList() {
-    const list  = document.getElementById('fence-list');
-    const count = document.getElementById('fence-count');
-    count.textContent = fences.length;
+  document.getElementById('btn-back').addEventListener('click', () => navigate('list'));
 
-    if (!fences.length) {
-      list.innerHTML = '<p class="fence-empty">Nenhuma cerca adicionada.</p>';
-      return;
+  document.getElementById('btn-save').addEventListener('click', saveFence);
+}
+
+function setupMapEditor(fence) {
+  // Clear existing circles
+  fences.forEach(f => map.removeLayer(f.circle));
+  fences = []; selectedId = null; colorIndex = 0;
+  deactivateFenceMode();
+  setAddr('Digite um CEP para navegar no mapa.', '');
+  document.getElementById('cep-input').value = '';
+
+  if (fence) {
+    // Editing: pre-populate
+    document.getElementById('fence-name-input').value = fence.name || '';
+    if (fence.latitude && fence.longitude) {
+      const ll = L.latLng(parseFloat(fence.latitude), parseFloat(fence.longitude));
+      map.setView(ll, 16);
+      addFence(ll, parseFloat(fence.radius) || 120);
     }
+  } else {
+    document.getElementById('fence-name-input').value = '';
+  }
 
-    list.innerHTML = '';
-    fences.forEach((f, i) => {
-      const div = document.createElement('div');
-      div.className = 'fence-item' + (f.id === selectedId ? ' selected' : '');
+  setTimeout(() => map.invalidateSize(), 100);
+}
 
-      div.innerHTML = `
-        <div class="fence-item-header">
-          <span class="fence-name">
-            <span class="fence-dot-color" style="background:${f.color}"></span>
-            Cerca ${i + 1}
-          </span>
-          <button class="btn-delete" title="Excluir cerca">✕</button>
-        </div>
-        <div class="fence-coords">
-          X (Lng):&nbsp;<span>${f.latlng.lng.toFixed(6)}</span><br/>
-          Y (Lat):&nbsp;<span>${f.latlng.lat.toFixed(6)}</span><br/>
-          Raio:&nbsp;&nbsp;&nbsp;<span>${Math.round(f.radius)} m</span>
-        </div>`;
+function addFence(latlng, radius) {
+  const color  = COLORS[colorIndex % COLORS.length]; colorIndex++;
+  const circle = L.circle(latlng, {
+    radius, color, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
+  }).addTo(map);
+  const fence = { id: Date.now(), circle, color, latlng, radius };
+  fences.push(fence);
+  attachCircleEvents(fence);
+  selectedId = fence.id;
+  renderFenceList();
+}
 
-      div.querySelector('.btn-delete').addEventListener('click', ev => {
-        ev.stopPropagation();
-        deleteFence(f.id);
-      });
+function deactivateFenceMode() {
+  fenceMode = false;
+  const btn = document.getElementById('btn-fence');
+  if (btn) { btn.classList.remove('active'); btn.textContent = '＋ Add Cerca'; }
+  if (map) map.getContainer().style.cursor = '';
+}
 
-      div.addEventListener('click', () => {
-        selectedId = f.id;
-        map.panTo(f.latlng);
-        renderList();
-      });
+function setAddr(txt, cls) {
+  const el = document.getElementById('addr-result');
+  if (el) { el.textContent = txt; el.className = cls; }
+}
 
-      list.appendChild(div);
+function renderFenceList() {
+  const list  = document.getElementById('fence-list');
+  const count = document.getElementById('fence-count');
+  if (!list) return;
+  count.textContent = fences.length;
+  if (!fences.length) { list.innerHTML = '<p class="fence-empty">Nenhuma cerca adicionada.</p>'; return; }
+  list.innerHTML = '';
+  fences.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'fence-item' + (f.id === selectedId ? ' selected' : '');
+    div.innerHTML = `
+      <div class="fence-item-header">
+        <span class="fence-name-label">
+          <span class="fence-dot-color" style="background:${f.color}"></span>Cerca ${i+1}
+        </span>
+        <button class="btn-delete" title="Excluir">✕</button>
+      </div>
+      <div class="fence-coords">
+        X (Lng):&nbsp;<span>${f.latlng.lng.toFixed(6)}</span><br/>
+        Y (Lat):&nbsp;<span>${f.latlng.lat.toFixed(6)}</span><br/>
+        Raio:&nbsp;&nbsp;&nbsp;<span>${Math.round(f.radius)} m</span>
+      </div>`;
+    div.querySelector('.btn-delete').addEventListener('click', ev => { ev.stopPropagation(); deleteFenceItem(f.id); });
+    div.addEventListener('click', () => { selectedId = f.id; map.panTo(f.latlng); renderFenceList(); });
+    list.appendChild(div);
+  });
+}
+
+function deleteFenceItem(id) {
+  const idx = fences.findIndex(f => f.id === id);
+  if (idx === -1) return;
+  map.removeLayer(fences[idx].circle);
+  fences.splice(idx, 1);
+  if (selectedId === id) selectedId = fences.length ? fences[fences.length-1].id : null;
+  renderFenceList();
+}
+
+// ── Drag & scroll per circle ────────────────────
+function attachCircleEvents(fence) {
+  const tryAttach = () => {
+    const el = fence.circle.getElement?.() ?? fence.circle._path;
+    if (!el) { setTimeout(tryAttach, 100); return; }
+    el.style.cursor = 'grab';
+    el.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      e.stopPropagation(); e.preventDefault();
+      isDragging = true; activeFence = fence;
+      map.dragging.disable();
+      dragStart = { pixel: { x: e.clientX, y: e.clientY }, center: fence.latlng };
+      el.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
     });
+    el.addEventListener('touchstart', e => {
+      e.stopPropagation(); e.preventDefault();
+      if (!e.touches[0]) return;
+      isDragging = true; activeFence = fence;
+      map.dragging.disable();
+      dragStart = { pixel: { x: e.touches[0].clientX, y: e.touches[0].clientY }, center: fence.latlng };
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    }, { passive: false });
+    el.addEventListener('wheel', e => {
+      e.preventDefault(); e.stopPropagation();
+      const newR = Math.max(20, fence.circle.getRadius() + (e.deltaY < 0 ? 10 : -10));
+      fence.circle.setRadius(newR); fence.radius = newR; renderFenceList();
+    }, { passive: false });
+    el.addEventListener('click', () => { selectedId = fence.id; renderFenceList(); });
+  };
+  tryAttach();
+}
+
+function onMove(e) { if (isDragging && activeFence) applyMove(e.clientX, e.clientY); }
+function onTouchMove(e) { e.preventDefault(); if (isDragging && activeFence && e.touches[0]) applyMove(e.touches[0].clientX, e.touches[0].clientY); }
+function applyMove(cx, cy) {
+  const f  = activeFence;
+  const sp = map.latLngToContainerPoint(dragStart.center);
+  const ll = map.containerPointToLatLng(L.point(sp.x + cx - dragStart.pixel.x, sp.y + cy - dragStart.pixel.y));
+  f.circle.setLatLng(ll); f.latlng = ll; renderFenceList();
+}
+function onUp() {
+  if (!isDragging) return;
+  isDragging = false; map.dragging.enable();
+  if (activeFence) {
+    const el = activeFence.circle.getElement?.() ?? activeFence.circle._path;
+    if (el) el.style.cursor = 'grab';
+    activeFence = null;
   }
+  document.removeEventListener('mousemove', onMove);
+  document.removeEventListener('mouseup', onUp);
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend', onUp);
+}
 
-  // ── Drag & scroll per circle ──────────────────────
-  function attachCircleEvents(fence) {
-    const tryAttach = () => {
-      const el = fence.circle.getElement?.() ?? fence.circle._path;
-      if (!el) { setTimeout(tryAttach, 100); return; }
+// ══════════════════════════════════════════════════
+//  SAVE
+// ══════════════════════════════════════════════════
+async function saveFence() {
+  const name = document.getElementById('fence-name-input').value.trim();
+  if (!name) { showToast('Informe um nome para a cerca.', 'err'); return; }
+  if (!fences.length) { showToast('Adicione ao menos uma cerca no mapa.', 'err'); return; }
 
-      el.style.cursor = 'grab';
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'Salvando…';
 
-      el.addEventListener('mousedown', e => {
-        if (e.button !== 0) return;
-        e.stopPropagation(); e.preventDefault();
-        isDragging = true; activeFence = fence;
-        map.dragging.disable();
-        dragStart = { pixel: { x: e.clientX, y: e.clientY }, center: fence.latlng };
-        el.style.cursor = 'grabbing';
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-      });
-
-      el.addEventListener('touchstart', e => {
-        e.stopPropagation(); e.preventDefault();
-        if (!e.touches[0]) return;
-        isDragging = true; activeFence = fence;
-        map.dragging.disable();
-        dragStart = { pixel: { x: e.touches[0].clientX, y: e.touches[0].clientY }, center: fence.latlng };
-        document.addEventListener('touchmove', onTouchMove, { passive: false });
-        document.addEventListener('touchend', onUp);
-      }, { passive: false });
-
-      el.addEventListener('wheel', e => {
-        e.preventDefault(); e.stopPropagation();
-        const delta = e.deltaY < 0 ? 10 : -10;
-        const newR  = Math.max(20, fence.circle.getRadius() + delta);
-        fence.circle.setRadius(newR);
-        fence.radius = newR;
-        renderList();
-      }, { passive: false });
-
-      el.addEventListener('click', () => {
-        selectedId = fence.id;
-        renderList();
-      });
+  try {
+    // Usa a primeira cerca do mapa como referência principal
+    const f = fences[0];
+    const payload = {
+      name,
+      latitude:  f.latlng.lat,
+      longitude: f.latlng.lng,
+      radius:    Math.round(f.radius),
     };
-    tryAttach();
-  }
 
-  function onMove(e) { if (isDragging && activeFence) applyMove(e.clientX, e.clientY); }
-  function onTouchMove(e) { e.preventDefault(); if (isDragging && activeFence && e.touches[0]) applyMove(e.touches[0].clientX, e.touches[0].clientY); }
-
-  function applyMove(cx, cy) {
-    const f  = activeFence;
-    const sp = map.latLngToContainerPoint(dragStart.center);
-    const np = L.point(sp.x + cx - dragStart.pixel.x, sp.y + cy - dragStart.pixel.y);
-    const ll = map.containerPointToLatLng(np);
-    f.circle.setLatLng(ll);
-    f.latlng = ll;
-    renderList();
-  }
-
-  function onUp() {
-    if (!isDragging) return;
-    isDragging = false; map.dragging.enable();
-    if (activeFence) {
-      const el = activeFence.circle.getElement?.() ?? activeFence.circle._path;
-      if (el) el.style.cursor = 'grab';
-      activeFence = null;
+    if (editingFence?.id) {
+      // PUT / PATCH para edição
+      await apiFetch(`/hcm/pontomobile/entities/fence/${editingFence.id}`, {
+        method: 'PUT', body: JSON.stringify(payload),
+      });
+      showToast('Cerca atualizada com sucesso!', 'ok');
+    } else {
+      // POST para criação
+      await apiFetch('/hcm/pontomobile/entities/fence', {
+        method: 'POST', body: JSON.stringify(payload),
+      });
+      showToast('Cerca criada com sucesso!', 'ok');
     }
-    document.removeEventListener('mousemove', onMove);
-    document.removeEventListener('mouseup',   onUp);
-    document.removeEventListener('touchmove', onTouchMove);
-    document.removeEventListener('touchend',  onUp);
+
+    setTimeout(() => navigate('list'), 1200);
+
+  } catch (err) {
+    console.error('[API] Erro ao salvar:', err);
+    showToast(`Erro ao salvar: ${err.message}`, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Salvar';
   }
+}
 
-} // end initApp
+// ══════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+}
 
+// ══════════════════════════════════════════════════
+//  LEAFLET LOADER
+// ══════════════════════════════════════════════════
 (function loadLeaflet() {
   const s = document.createElement('script');
   s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-  s.onload = () => initApp();
-  s.onerror = () => {
-    document.getElementById('map').innerHTML =
-      '<p style="color:#e63946;padding:20px;font-family:monospace">Erro ao carregar Leaflet.</p>';
-  };
+  s.onerror = () => showToast('Erro ao carregar Leaflet.', 'err');
   document.body.appendChild(s);
 })();
 </script>
