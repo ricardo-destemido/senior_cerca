@@ -800,24 +800,29 @@ function setupMapEditor(fence) {
         console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
         return;
       }
-      addFence(L.latLng(lat, lng), rad);
+      addFence(L.latLng(lat, lng), rad, true); // skipRender durante o loop
       if (!firstValid) firstValid = [lat, lng];
     });
+
+    console.log('[MapEditor] Fences após população:', fences.length, fences);
+    console.log('[MapEditor] #fence-list element:', document.getElementById('fence-list'));
+    renderFenceList(); // render único após todos os perímetros
 
     if (firstValid) map.setView(firstValid, 16);
   }, 150);
 }
 
-function addFence(latlng, radius) {
+function addFence(latlng, radius, skipRender = false) {
   const color  = COLORS[colorIndex % COLORS.length]; colorIndex++;
   const circle = L.circle(latlng, {
     radius, color, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
   }).addTo(map);
-  const fence = { id: Date.now(), circle, color, latlng, radius };
+  const fence = { id: Date.now() + colorIndex, circle, color, latlng, radius };
   fences.push(fence);
   attachCircleEvents(fence);
   selectedId = fence.id;
-  renderFenceList();
+  if (!skipRender) renderFenceList();
+  return fence;
 }
 
 function deactivateFenceMode() {
