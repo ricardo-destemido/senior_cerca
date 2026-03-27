@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GeoFence — Mapa Inteligente</title>
+  <title>GeoFence — Destemido Sistemas</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,27 +13,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0b0e14;
-      --panel:    #12161f;
-      --border:   #1f2738;
-      --accent:   #e63946;
-      --accent2:  #ff9f1c;
-      --text:     #e8eaf0;
-      --muted:    #5a6278;
-      --success:  #4ade80;
-      --mono:     'Space Mono', monospace;
-      --sans:     'Syne', sans-serif;
+      --bg:      #0b0e14;
+      --panel:   #12161f;
+      --border:  #1f2738;
+      --accent:  #e63946;
+      --accent2: #ff9f1c;
+      --text:    #e8eaf0;
+      --muted:   #5a6278;
+      --success: #4ade80;
+      --mono:    'Space Mono', monospace;
+      --sans:    'Syne', sans-serif;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      overflow: hidden;
-    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
 
-    /* ── Layout ─────────────────────────────────── */
     #app {
       display: grid;
       grid-template-rows: 64px 1fr;
@@ -41,302 +34,157 @@
       height: 100vh;
     }
 
-    /* ── Header ─────────────────────────────────── */
+    /* ── Header ── */
     header {
       grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
       padding: 0 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
-      position: relative;
       z-index: 999;
     }
-
     .logo-mark {
       width: 32px; height: 32px;
       background: var(--accent);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-
     .logo-mark svg { width: 16px; fill: white; }
-
-    header h1 {
-      font-family: var(--sans);
-      font-weight: 800;
-      font-size: 1.1rem;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    header h1 span { color: var(--accent); }
-
+    header h1 { font-weight: 800; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
+    header h1 a { color: white; text-decoration: none; }
     .header-badge {
       margin-left: auto;
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
-      background: var(--border);
-      padding: 3px 10px;
-      border-radius: 2px;
-      letter-spacing: .05em;
+      font-family: var(--mono); font-size: .65rem; color: var(--muted);
+      background: var(--border); padding: 3px 10px; border-radius: 2px; letter-spacing: .05em;
     }
 
-    /* ── Sidebar ─────────────────────────────────── */
+    /* ── Sidebar ── */
     aside {
       background: var(--panel);
       border-right: 1px solid var(--border);
       padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow-y: auto;
-      z-index: 500;
+      display: flex; flex-direction: column; gap: 18px;
+      overflow-y: auto; z-index: 500;
     }
 
     .section-label {
-      font-family: var(--mono);
-      font-size: .6rem;
-      letter-spacing: .15em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 8px;
+      font-family: var(--mono); font-size: .6rem; letter-spacing: .15em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
     }
 
-    /* CEP input group */
-    .input-group {
-      display: flex;
-      gap: 8px;
-    }
+    .input-group { display: flex; gap: 8px; }
 
     .cep-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 10px 14px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: .85rem;
-      letter-spacing: .08em;
-      outline: none;
-      transition: border-color .2s;
+      flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 10px 14px; color: var(--text); font-family: var(--mono); font-size: .85rem;
+      letter-spacing: .08em; outline: none; transition: border-color .2s;
     }
-
     .cep-input:focus { border-color: var(--accent); }
     .cep-input::placeholder { color: var(--muted); }
 
     .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: var(--sans);
-      font-size: .8rem;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      transition: all .18s;
-      white-space: nowrap;
+      padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer;
+      font-family: var(--sans); font-size: .8rem; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase; transition: all .18s; white-space: nowrap;
     }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
+    .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: #c8303b; transform: translateY(-1px); }
-    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary { width: 100%; background: transparent; color: var(--accent2); border: 1px solid var(--accent2); }
+    .btn-secondary:hover { background: rgba(255,159,28,.08); transform: translateY(-1px); }
+    .btn-secondary.active { background: var(--accent2); color: #0b0e14; }
 
-    .btn-secondary {
-      width: 100%;
-      background: transparent;
-      color: var(--accent2);
-      border: 1px solid var(--accent2);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,159,28,.08);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary.active {
-      background: var(--accent2);
-      color: #0b0e14;
-    }
-
-    /* Address result */
     #addr-result {
-      font-size: .75rem;
-      line-height: 1.6;
-      color: var(--muted);
-      font-family: var(--mono);
-      min-height: 40px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 10px 12px;
+      font-size: .75rem; line-height: 1.6; color: var(--muted); font-family: var(--mono);
+      min-height: 40px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 10px 12px;
+    }
+    #addr-result.ok  { color: var(--success); border-color: rgba(74,222,128,.3); }
+    #addr-result.err { color: var(--accent);  border-color: rgba(230,57,70,.3); }
+
+    .divider { height: 1px; background: var(--border); flex-shrink: 0; }
+
+    /* ── Fence list section ── */
+    .list-section {
+      display: flex; flex-direction: column; gap: 8px;
+      flex: 1; min-height: 0;
     }
 
-    #addr-result.ok { color: var(--success); border-color: rgba(74,222,128,.3); }
-    #addr-result.err { color: var(--accent); border-color: rgba(230,57,70,.3); }
-
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
+    #fence-list {
+      display: flex; flex-direction: column; gap: 8px;
+      overflow-y: auto; flex: 1;
     }
 
-    /* Coordinates card */
-    .coord-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .fence-empty {
+      font-family: var(--mono); font-size: .7rem; color: var(--muted);
+      text-align: center; padding: 16px 0;
     }
 
-    .coord-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .fence-item {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 12px; cursor: pointer; transition: border-color .18s, background .18s;
+    }
+    .fence-item:hover { border-color: var(--accent2); background: #0f1319; }
+    .fence-item.selected { border-color: var(--accent); background: rgba(230,57,70,.06); }
+
+    .fence-item-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
     }
 
-    .coord-axis {
-      font-family: var(--mono);
-      font-size: .7rem;
-      font-weight: 700;
-      width: 20px;
-      height: 20px;
-      border-radius: 3px;
-      display: flex; align-items: center; justify-content: center;
+    .fence-name {
+      font-family: var(--sans); font-size: .8rem; font-weight: 600;
+      color: var(--text); display: flex; align-items: center; gap: 6px;
+    }
+
+    .fence-dot-color {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    .fence-coords {
+      font-family: var(--mono); font-size: .65rem; color: var(--muted); line-height: 1.8;
+    }
+    .fence-coords span { color: var(--text); }
+
+    .btn-delete {
+      background: transparent; border: none; cursor: pointer;
+      color: var(--muted); font-size: .9rem; padding: 2px 4px;
+      line-height: 1; transition: color .15s; border-radius: 3px;
+    }
+    .btn-delete:hover { color: var(--accent); background: rgba(230,57,70,.1); }
+
+    .btn-clear {
+      width: 100%; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); border-radius: 4px; padding: 8px; cursor: pointer;
+      font-family: var(--mono); font-size: .65rem; letter-spacing: .08em;
+      text-transform: uppercase; transition: all .18s; flex-shrink: 0;
+    }
+    .btn-clear:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hint {
+      font-size: .7rem; font-family: var(--mono); color: var(--muted);
+      line-height: 1.6; padding: 10px 12px;
+      background: var(--bg); border: 1px dashed var(--border); border-radius: 4px;
       flex-shrink: 0;
     }
-
-    .coord-axis.x { background: rgba(230,57,70,.2); color: var(--accent); }
-    .coord-axis.y { background: rgba(255,159,28,.2); color: var(--accent2); }
-
-    .coord-label {
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      min-width: 60px;
-    }
-
-    .coord-value {
-      font-family: var(--mono);
-      font-size: .85rem;
-      color: var(--text);
-      letter-spacing: .04em;
-      transition: color .2s;
-    }
-
-    .coord-value.flash { color: var(--success); }
-
-    /* Radius row */
-    .radius-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
-
-    .radius-label {
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    #radius-val {
-      font-family: var(--mono);
-      font-size: .85rem;
-      color: var(--text);
-    }
-
-    /* Hint */
-    .hint {
-      font-size: .7rem;
-      font-family: var(--mono);
-      color: var(--muted);
-      line-height: 1.6;
-      padding: 10px 12px;
-      background: var(--bg);
-      border: 1px dashed var(--border);
-      border-radius: 4px;
-    }
-
     .hint strong { color: var(--accent2); }
 
-    /* Status dot */
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .dot.active { background: var(--success); box-shadow: 0 0 6px var(--success); }
-
-    .status-text {
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
-      letter-spacing: .06em;
-    }
-
-    /* ── Map ──────────────────────────────────────── */
-    #map {
-      width: 100%;
-      height: 100%;
-      background: #0b0e14;
-    }
-
-    /* Custom Leaflet dark override */
-    .leaflet-container {
-      font-family: var(--sans);
-      background: #0e1117 !important;
-    }
-
-    /* Resize handle visual */
-    .resize-handle {
-      cursor: ew-resize;
-    }
-
-    /* Loading spinner on btn */
-    .btn.loading { pointer-events: none; opacity: .6; }
+    /* ── Map ── */
+    #map { width: 100%; height: 100%; }
+    .leaflet-container { font-family: var(--sans); }
   </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- Header -->
   <header>
     <div class="logo-mark">
       <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
-    <h1>Geo<span>Fence</span></h1>
-    <span class="header-badge">v1.0 — LEAFLET</span>
+    <h1><a href="https://destemidosistemas.com.br/" target="_blank">Destemido Sistemas</a></h1>
+    <span class="header-badge">GEOFENCE — LEAFLET</span>
   </header>
 
-  <!-- Sidebar -->
   <aside>
 
-    <!-- CEP Section -->
     <div>
       <p class="section-label">Localização / CEP</p>
       <div class="input-group">
@@ -349,366 +197,277 @@
 
     <div class="divider"></div>
 
-    <!-- Cerca Section -->
     <div>
       <p class="section-label">Geofence</p>
       <button id="btn-fence" class="btn btn-secondary">＋ Add Cerca</button>
-      <div style="height:12px"></div>
-      <div class="status-row">
-        <div class="dot" id="fence-dot"></div>
-        <span class="status-text" id="fence-status">Nenhuma cerca ativa</span>
-      </div>
     </div>
 
     <div class="divider"></div>
 
-    <!-- Coordinates -->
-    <div>
-      <p class="section-label">Centro da Cerca</p>
-      <div class="coord-card">
-        <div class="coord-row">
-          <span class="coord-axis x">X</span>
-          <span class="coord-label">Longitude</span>
-          <span class="coord-value" id="coord-x">—</span>
-        </div>
-        <div class="coord-row">
-          <span class="coord-axis y">Y</span>
-          <span class="coord-label">Latitude</span>
-          <span class="coord-value" id="coord-y">—</span>
-        </div>
-        <div class="divider"></div>
-        <div class="radius-row">
-          <span class="radius-label">Raio (m)</span>
-          <span id="radius-val">—</span>
-        </div>
+    <div class="list-section">
+      <p class="section-label">Cercas (<span id="fence-count">0</span>)</p>
+      <div id="fence-list">
+        <p class="fence-empty">Nenhuma cerca adicionada.</p>
       </div>
+      <button class="btn-clear" id="btn-clear-all">✕ Remover todas</button>
     </div>
 
     <div class="divider"></div>
 
-    <!-- Hint -->
     <div class="hint">
       <strong>Como usar:</strong><br/>
       1. Busque um CEP.<br/>
       2. Clique em <strong>Add Cerca</strong>.<br/>
       3. Clique no mapa para posicionar.<br/>
-      4. <strong>Scroll</strong> sobre a cerca para ajustar o raio.<br/>
-      5. <strong>Arraste</strong> para reposicionar.
+      4. <strong>Scroll</strong> sobre a cerca p/ ajustar raio.<br/>
+      5. <strong>Arraste</strong> para reposicionar.<br/>
+      6. Clique na lista para selecionar/centralizar.
     </div>
 
   </aside>
 
-  <!-- Map -->
   <div id="map"></div>
 
 </div>
 
 <script>
 function initApp() {
-// ─────────────────────────────────────────────────
-//  MAP INIT
-// ─────────────────────────────────────────────────
-const map = L.map('map', {
-  center: [-15.7934, -47.8823],
-  zoom: 5,
-  zoomControl: true,
-});
 
-// Esri World Street Map — sem restrições de origem
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS',
-  maxZoom: 19,
-}).addTo(map);
+  const COLORS = ['#e63946','#ff9f1c','#4ade80','#60a5fa','#c084fc','#f472b6','#fb923c','#34d399'];
+  let colorIndex   = 0;
+  let fenceMode    = false;
+  let fences       = [];          // { id, circle, color, latlng, radius }
+  let selectedId   = null;
+  let isDragging   = false;
+  let dragStart    = null;
+  let activeFence  = null;
 
-// ─────────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────────
-let fenceMode    = false;   // awaiting map click to place circle
-let fenceCircle  = null;    // Leaflet circle instance
-let isDragging   = false;
-let dragStart    = null;    // { latlng, center }
-let isResizing   = false;
-let resizeStartPixel = null;
-let resizeStartRadius = 120;
-
-// ─────────────────────────────────────────────────
-//  CEP SEARCH
-// ─────────────────────────────────────────────────
-const cepInput   = document.getElementById('cep-input');
-const btnSearch  = document.getElementById('btn-search');
-const addrResult = document.getElementById('addr-result');
-
-function formatCep(v) {
-  v = v.replace(/\D/g, '').slice(0, 8);
-  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
-  return v;
-}
-
-cepInput.addEventListener('input', () => {
-  cepInput.value = formatCep(cepInput.value);
-});
-
-cepInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') btnSearch.click();
-});
-
-btnSearch.addEventListener('click', async () => {
-  const cep = cepInput.value.replace(/\D/g, '');
-  if (cep.length !== 8) {
-    setAddr('CEP inválido. Use 8 dígitos.', 'err');
-    return;
-  }
-
-  btnSearch.classList.add('loading');
-  btnSearch.textContent = '...';
-  setAddr('Buscando...', '');
-
-  try {
-    // ViaCEP for address info
-    const res  = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await res.json();
-
-    if (data.erro) {
-      setAddr('CEP não encontrado.', 'err');
-      return;
-    }
-
-    const query = encodeURIComponent(`${data.logradouro || ''} ${data.bairro || ''} ${data.localidade} ${data.uf} Brasil`);
-    const geo   = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-    const gdata = await geo.json();
-
-    if (!gdata.length) {
-      setAddr(`${data.localidade} - ${data.uf}\nCoordenadas não localizadas.`, 'err');
-      return;
-    }
-
-    const lat = parseFloat(gdata[0].lat);
-    const lng = parseFloat(gdata[0].lon);
-
-    map.flyTo([lat, lng], 16, { duration: 1.4 });
-
-    const addr = [data.logradouro, data.bairro, data.localidade, data.uf]
-      .filter(Boolean).join(', ');
-    setAddr(addr, 'ok');
-
-  } catch {
-    setAddr('Erro de conexão.', 'err');
-  } finally {
-    btnSearch.classList.remove('loading');
-    btnSearch.textContent = 'IR';
-  }
-});
-
-function setAddr(txt, cls) {
-  addrResult.textContent = txt;
-  addrResult.className   = cls;
-}
-
-// ─────────────────────────────────────────────────
-//  FENCE MODE TOGGLE
-// ─────────────────────────────────────────────────
-const btnFence   = document.getElementById('btn-fence');
-const fenceDot   = document.getElementById('fence-dot');
-const fenceStatus= document.getElementById('fence-status');
-
-btnFence.addEventListener('click', () => {
-  if (fenceCircle) {
-    // Remove existing fence
-    map.removeLayer(fenceCircle);
-    fenceCircle = null;
-    resetCoords();
-    fenceDot.classList.remove('active');
-    fenceStatus.textContent = 'Nenhuma cerca ativa';
-  }
-
-  fenceMode = !fenceMode;
-
-  if (fenceMode) {
-    btnFence.classList.add('active');
-    btnFence.textContent = '× Cancelar';
-    map.getContainer().style.cursor = 'crosshair';
-    fenceStatus.textContent = 'Clique no mapa para posicionar…';
-  } else {
-    deactivateFenceMode();
-  }
-});
-
-function deactivateFenceMode() {
-  fenceMode = false;
-  btnFence.classList.remove('active');
-  btnFence.textContent = '＋ Add Cerca';
-  map.getContainer().style.cursor = '';
-}
-
-// ─────────────────────────────────────────────────
-//  PLACE CIRCLE ON MAP CLICK
-// ─────────────────────────────────────────────────
-map.on('click', (e) => {
-  if (!fenceMode) return;
-
-  if (fenceCircle) map.removeLayer(fenceCircle);
-
-  fenceCircle = L.circle(e.latlng, {
-    radius:      120,
-    color:       '#e63946',
-    weight:      2.5,
-    opacity:     1,
-    fillOpacity: 0,
-    interactive: true,
+  // ── Map ──────────────────────────────────────────
+  const map = L.map('map', { center: [-15.7934, -47.8823], zoom: 5 });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri', maxZoom: 19,
   }).addTo(map);
 
-  updateCoords(e.latlng, 120);
-  fenceDot.classList.add('active');
-  fenceStatus.textContent = 'Cerca ativa';
-  deactivateFenceMode();
+  // ── CEP Search ───────────────────────────────────
+  const cepInput   = document.getElementById('cep-input');
+  const btnSearch  = document.getElementById('btn-search');
+  const addrResult = document.getElementById('addr-result');
 
-  // Attach circle events
-  attachCircleEvents(fenceCircle);
-});
+  function formatCep(v) {
+    v = v.replace(/\D/g,'').slice(0,8);
+    if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5);
+    return v;
+  }
+  cepInput.addEventListener('input', () => { cepInput.value = formatCep(cepInput.value); });
+  cepInput.addEventListener('keydown', e => { if (e.key === 'Enter') btnSearch.click(); });
 
-// ─────────────────────────────────────────────────
-//  CIRCLE INTERACTION — drag + resize
-// ─────────────────────────────────────────────────
-function attachCircleEvents(circle) {
-  const el = circle.getElement?.() ?? circle._path;
-  if (!el) {
-    // Retry once element is ready
-    setTimeout(() => attachCircleEvents(circle), 100);
-    return;
+  btnSearch.addEventListener('click', async () => {
+    const cep = cepInput.value.replace(/\D/g,'');
+    if (cep.length !== 8) { setAddr('CEP inválido. Use 8 dígitos.','err'); return; }
+    btnSearch.textContent = '...'; btnSearch.style.pointerEvents = 'none';
+    setAddr('Buscando...','');
+    try {
+      const vr = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const vd = await vr.json();
+      if (vd.erro) { setAddr('CEP não encontrado.','err'); return; }
+      const q  = encodeURIComponent(`${vd.logradouro||''} ${vd.bairro||''} ${vd.localidade} ${vd.uf} Brasil`);
+      const gr = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+      const gd = await gr.json();
+      if (!gd.length) { setAddr(`${vd.localidade} - ${vd.uf}\nSem coordenadas.`,'err'); return; }
+      map.flyTo([parseFloat(gd[0].lat), parseFloat(gd[0].lon)], 16, { duration: 1.4 });
+      setAddr([vd.logradouro,vd.bairro,vd.localidade,vd.uf].filter(Boolean).join(', '),'ok');
+    } catch { setAddr('Erro de conexão.','err'); }
+    finally { btnSearch.textContent = 'IR'; btnSearch.style.pointerEvents = ''; }
+  });
+
+  function setAddr(txt, cls) { addrResult.textContent = txt; addrResult.className = cls; }
+
+  // ── Fence mode ───────────────────────────────────
+  const btnFence = document.getElementById('btn-fence');
+
+  btnFence.addEventListener('click', () => {
+    fenceMode = !fenceMode;
+    if (fenceMode) {
+      btnFence.classList.add('active');
+      btnFence.textContent = '× Cancelar';
+      map.getContainer().style.cursor = 'crosshair';
+    } else {
+      deactivateFenceMode();
+    }
+  });
+
+  function deactivateFenceMode() {
+    fenceMode = false;
+    btnFence.classList.remove('active');
+    btnFence.textContent = '＋ Add Cerca';
+    map.getContainer().style.cursor = '';
   }
 
-  el.style.cursor = 'grab';
+  // ── Place circle ─────────────────────────────────
+  map.on('click', (e) => {
+    if (!fenceMode) return;
 
-  // ── Drag ──────────────────────────────────────
-  el.addEventListener('mousedown', startDrag);
-  el.addEventListener('touchstart', startDragTouch, { passive: false });
+    const color  = COLORS[colorIndex % COLORS.length];
+    colorIndex++;
 
-  // ── Scroll resize ─────────────────────────────
-  el.addEventListener('wheel', onWheel, { passive: false });
-}
+    const circle = L.circle(e.latlng, {
+      radius: 120, color, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
+    }).addTo(map);
 
-function startDrag(e) {
-  if (e.button !== 0) return;
-  e.stopPropagation();
-  e.preventDefault();
+    const fence = { id: Date.now(), circle, color, latlng: e.latlng, radius: 120 };
+    fences.push(fence);
 
-  isDragging = true;
-  map.dragging.disable();
-
-  dragStart = {
-    pixel:  { x: e.clientX, y: e.clientY },
-    center: fenceCircle.getLatLng(),
-  };
-
-  const el = fenceCircle.getElement?.() ?? fenceCircle._path;
-  if (el) el.style.cursor = 'grabbing';
-
-  document.addEventListener('mousemove', onDragMove);
-  document.addEventListener('mouseup',   stopDrag);
-}
-
-function startDragTouch(e) {
-  e.stopPropagation();
-  e.preventDefault();
-  if (!e.touches[0]) return;
-
-  isDragging = true;
-  map.dragging.disable();
-
-  dragStart = {
-    pixel:  { x: e.touches[0].clientX, y: e.touches[0].clientY },
-    center: fenceCircle.getLatLng(),
-  };
-
-  document.addEventListener('touchmove',  onDragMoveTouch, { passive: false });
-  document.addEventListener('touchend',   stopDrag);
-}
-
-function onDragMove(e) {
-  if (!isDragging || !fenceCircle) return;
-  moveFence(e.clientX, e.clientY);
-}
-
-function onDragMoveTouch(e) {
-  e.preventDefault();
-  if (!isDragging || !fenceCircle || !e.touches[0]) return;
-  moveFence(e.touches[0].clientX, e.touches[0].clientY);
-}
-
-function moveFence(cx, cy) {
-  const dx = cx - dragStart.pixel.x;
-  const dy = cy - dragStart.pixel.y;
-
-  const startPx  = map.latLngToContainerPoint(dragStart.center);
-  const newPx    = L.point(startPx.x + dx, startPx.y + dy);
-  const newLatLng= map.containerPointToLatLng(newPx);
-
-  fenceCircle.setLatLng(newLatLng);
-  updateCoords(newLatLng, fenceCircle.getRadius());
-}
-
-function stopDrag() {
-  if (!isDragging) return;
-  isDragging = false;
-  map.dragging.enable();
-
-  const el = fenceCircle?.getElement?.() ?? fenceCircle?._path;
-  if (el) el.style.cursor = 'grab';
-
-  document.removeEventListener('mousemove', onDragMove);
-  document.removeEventListener('mouseup',   stopDrag);
-  document.removeEventListener('touchmove', onDragMoveTouch);
-  document.removeEventListener('touchend',  stopDrag);
-}
-
-// ── Scroll resize ──────────────────────────────
-function onWheel(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (!fenceCircle) return;
-
-  const delta = e.deltaY < 0 ? 10 : -10;
-  const newR  = Math.max(20, fenceCircle.getRadius() + delta);
-  fenceCircle.setRadius(newR);
-  updateCoords(fenceCircle.getLatLng(), newR);
-}
-
-// ─────────────────────────────────────────────────
-//  COORDS UI
-// ─────────────────────────────────────────────────
-const coordX   = document.getElementById('coord-x');
-const coordY   = document.getElementById('coord-y');
-const radiusVal= document.getElementById('radius-val');
-
-function updateCoords(latlng, radius) {
-  coordX.textContent = latlng.lng.toFixed(6);
-  coordY.textContent = latlng.lat.toFixed(6);
-  radiusVal.textContent = `${Math.round(radius)} m`;
-
-  // Flash animation
-  [coordX, coordY].forEach(el => {
-    el.classList.add('flash');
-    setTimeout(() => el.classList.remove('flash'), 400);
+    attachCircleEvents(fence);
+    selectedId = fence.id;
+    renderList();
+    deactivateFenceMode();
   });
-}
 
-function resetCoords() {
-  coordX.textContent = '—';
-  coordY.textContent = '—';
-  radiusVal.textContent = '—';
-}
+  // ── Delete ───────────────────────────────────────
+  function deleteFence(id) {
+    const idx = fences.findIndex(f => f.id === id);
+    if (idx === -1) return;
+    map.removeLayer(fences[idx].circle);
+    fences.splice(idx, 1);
+    if (selectedId === id) selectedId = fences.length ? fences[fences.length-1].id : null;
+    renderList();
+  }
+
+  document.getElementById('btn-clear-all').addEventListener('click', () => {
+    fences.forEach(f => map.removeLayer(f.circle));
+    fences = []; selectedId = null;
+    renderList();
+  });
+
+  // ── Render list ──────────────────────────────────
+  function renderList() {
+    const list  = document.getElementById('fence-list');
+    const count = document.getElementById('fence-count');
+    count.textContent = fences.length;
+
+    if (!fences.length) {
+      list.innerHTML = '<p class="fence-empty">Nenhuma cerca adicionada.</p>';
+      return;
+    }
+
+    list.innerHTML = '';
+    fences.forEach((f, i) => {
+      const div = document.createElement('div');
+      div.className = 'fence-item' + (f.id === selectedId ? ' selected' : '');
+
+      div.innerHTML = `
+        <div class="fence-item-header">
+          <span class="fence-name">
+            <span class="fence-dot-color" style="background:${f.color}"></span>
+            Cerca ${i + 1}
+          </span>
+          <button class="btn-delete" title="Excluir cerca">✕</button>
+        </div>
+        <div class="fence-coords">
+          X (Lng):&nbsp;<span>${f.latlng.lng.toFixed(6)}</span><br/>
+          Y (Lat):&nbsp;<span>${f.latlng.lat.toFixed(6)}</span><br/>
+          Raio:&nbsp;&nbsp;&nbsp;<span>${Math.round(f.radius)} m</span>
+        </div>`;
+
+      div.querySelector('.btn-delete').addEventListener('click', ev => {
+        ev.stopPropagation();
+        deleteFence(f.id);
+      });
+
+      div.addEventListener('click', () => {
+        selectedId = f.id;
+        map.panTo(f.latlng);
+        renderList();
+      });
+
+      list.appendChild(div);
+    });
+  }
+
+  // ── Drag & scroll per circle ──────────────────────
+  function attachCircleEvents(fence) {
+    const tryAttach = () => {
+      const el = fence.circle.getElement?.() ?? fence.circle._path;
+      if (!el) { setTimeout(tryAttach, 100); return; }
+
+      el.style.cursor = 'grab';
+
+      el.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        e.stopPropagation(); e.preventDefault();
+        isDragging = true; activeFence = fence;
+        map.dragging.disable();
+        dragStart = { pixel: { x: e.clientX, y: e.clientY }, center: fence.latlng };
+        el.style.cursor = 'grabbing';
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      el.addEventListener('touchstart', e => {
+        e.stopPropagation(); e.preventDefault();
+        if (!e.touches[0]) return;
+        isDragging = true; activeFence = fence;
+        map.dragging.disable();
+        dragStart = { pixel: { x: e.touches[0].clientX, y: e.touches[0].clientY }, center: fence.latlng };
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onUp);
+      }, { passive: false });
+
+      el.addEventListener('wheel', e => {
+        e.preventDefault(); e.stopPropagation();
+        const delta = e.deltaY < 0 ? 10 : -10;
+        const newR  = Math.max(20, fence.circle.getRadius() + delta);
+        fence.circle.setRadius(newR);
+        fence.radius = newR;
+        renderList();
+      }, { passive: false });
+
+      el.addEventListener('click', () => {
+        selectedId = fence.id;
+        renderList();
+      });
+    };
+    tryAttach();
+  }
+
+  function onMove(e) { if (isDragging && activeFence) applyMove(e.clientX, e.clientY); }
+  function onTouchMove(e) { e.preventDefault(); if (isDragging && activeFence && e.touches[0]) applyMove(e.touches[0].clientX, e.touches[0].clientY); }
+
+  function applyMove(cx, cy) {
+    const f  = activeFence;
+    const sp = map.latLngToContainerPoint(dragStart.center);
+    const np = L.point(sp.x + cx - dragStart.pixel.x, sp.y + cy - dragStart.pixel.y);
+    const ll = map.containerPointToLatLng(np);
+    f.circle.setLatLng(ll);
+    f.latlng = ll;
+    renderList();
+  }
+
+  function onUp() {
+    if (!isDragging) return;
+    isDragging = false; map.dragging.enable();
+    if (activeFence) {
+      const el = activeFence.circle.getElement?.() ?? activeFence.circle._path;
+      if (el) el.style.cursor = 'grab';
+      activeFence = null;
+    }
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup',   onUp);
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend',  onUp);
+  }
+
 } // end initApp
 
-// ── Dynamic Leaflet loader ──────────────────────
 (function loadLeaflet() {
-  const script = document.createElement('script');
-  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-  script.onload = () => initApp();
-  script.onerror = () => {
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  s.onload = () => initApp();
+  s.onerror = () => {
     document.getElementById('map').innerHTML =
-      '<p style="color:#e63946;padding:20px;font-family:monospace">Erro ao carregar Leaflet. Verifique sua conexão.</p>';
+      '<p style="color:#e63946;padding:20px;font-family:monospace">Erro ao carregar Leaflet.</p>';
   };
-  document.body.appendChild(script);
+  document.body.appendChild(s);
 })();
 </script>
 </body>
