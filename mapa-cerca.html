@@ -594,9 +594,21 @@ async function loadFences(page) {
   }
 }
 
-function editFence(fence) {
-  editingFence = fence;
-  navigate('map', { label: `Editando: ${editingFence.name || 'Cerca'}`, fence: editingFence });
+async function editFence(fence) {
+  // Show loading state on the clicked row's edit button
+  const btn = document.querySelector(`button[data-action="edit"][data-idx="${window._tableRows?.indexOf(fence)}"]`);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando…'; }
+
+  try {
+    const detail = await apiFetch(`/hcm/pontomobile/entities/fence/${fence.id}`);
+    editingFence = detail;
+    navigate('map', { label: `Editando: ${detail.name || 'Cerca'}`, fence: detail });
+  } catch (err) {
+    console.error('[API] Erro ao carregar detalhe da cerca:', err);
+    showToast(`Erro ao carregar cerca: ${err.message}`, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✏️ Editar'; }
+  }
 }
 
 let pendingDeleteId   = null;
@@ -763,12 +775,28 @@ function setupMapEditor(fence) {
   document.getElementById('cep-input').value = '';
 
   if (fence) {
-    // Editing: pre-populate
     document.getElementById('fence-name-input').value = fence.name || '';
-    if (fence.latitude && fence.longitude) {
-      const ll = L.latLng(parseFloat(fence.latitude), parseFloat(fence.longitude));
-      map.setView(ll, 16);
-      addFence(ll, parseFloat(fence.radius) || 120);
+
+    // Use perimeters array if available, otherwise fall back to root lat/lng/radius
+    const perimeters = Array.isArray(fence.perimeters) && fence.perimeters.length
+      ? fence.perimeters
+      : (fence.latitude && fence.longitude
+          ? [{ latitude: fence.latitude, longitude: fence.longitude, radius: fence.radius }]
+          : []);
+
+    if (perimeters.length) {
+      perimeters.forEach(p => {
+        const lat = parseFloat(p.latitude);
+        const lng = parseFloat(p.longitude);
+        const rad = parseFloat(p.radius) || 120;
+        if (!isNaN(lat) && !isNaN(lng)) {
+          addFence(L.latLng(lat, lng), rad);
+        }
+      });
+
+      // Center map on first perimeter
+      const first = perimeters[0];
+      map.setView([parseFloat(first.latitude), parseFloat(first.longitude)], 16);
     }
   } else {
     document.getElementById('fence-name-input').value = '';
