@@ -233,6 +233,38 @@
 <script>
 function initApp() {
 
+  // ── Token SeniorX ────────────────────────────────
+  // O SeniorX injeta o token via postMessage ou query string,
+  // pois browsers bloqueiam acesso direto a headers de requisição no frontend.
+  // Tentamos capturar pelas formas mais comuns:
+
+  // 1) Query string: ?token=xxx ou ?authorization=xxx
+  const params = new URLSearchParams(window.location.search);
+  const tokenQS = params.get('authorization') || params.get('token');
+  if (tokenQS) {
+    console.log('[SeniorX] Token via query string:', tokenQS);
+  }
+
+  // 2) postMessage (SeniorX pode enviar após o carregamento)
+  window.addEventListener('message', (event) => {
+    console.log('[SeniorX] postMessage recebido:', event.data);
+    if (event.data?.authorization) {
+      console.log('[SeniorX] Token via postMessage:', event.data.authorization);
+    }
+    if (event.data?.token) {
+      console.log('[SeniorX] Token via postMessage (token):', event.data.token);
+    }
+  });
+
+  // 3) Objeto global que o SeniorX possa ter injetado
+  if (window.senior?.authorization || window.seniorAuthorization) {
+    console.log('[SeniorX] Token via objeto global:', window.senior?.authorization || window.seniorAuthorization);
+  }
+
+  console.log('[SeniorX] window.location.href:', window.location.href);
+  console.log('[SeniorX] document.referrer:', document.referrer);
+
+
   const COLORS = ['#e63946','#ff9f1c','#4ade80','#60a5fa','#c084fc','#f472b6','#fb923c','#34d399'];
   let colorIndex   = 0;
   let fenceMode    = false;
