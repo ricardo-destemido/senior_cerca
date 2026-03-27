@@ -774,39 +774,38 @@ function setupMapEditor(fence) {
   deactivateFenceMode();
   setAddr('Digite um CEP para navegar no mapa.', '');
   document.getElementById('cep-input').value = '';
+  document.getElementById('fence-name-input').value = fence?.name || '';
 
-  if (fence) {
-    document.getElementById('fence-name-input').value = fence.name || '';
+  // Defer population until the map container is visible in the DOM
+  setTimeout(() => {
+    map.invalidateSize();
 
-    // Use perimeters array if available, otherwise fall back to root lat/lng/radius
+    if (!fence) return;
+
     const perimeters = Array.isArray(fence.perimeters) && fence.perimeters.length
       ? fence.perimeters
       : (fence.latitude && fence.longitude
           ? [{ startPoint: { latitude: fence.latitude, longitude: fence.longitude }, radius: fence.radius }]
           : []);
 
-    if (perimeters.length) {
-      let firstValid = null;
+    if (!perimeters.length) return;
 
-      perimeters.forEach(p => {
-        const lat = parseFloat(p.startPoint?.latitude);
-        const lng = parseFloat(p.startPoint?.longitude);
-        const rad = parseFloat(p.radius) || 120;
-        if (isNaN(lat) || isNaN(lng)) {
-          console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
-          return;
-        }
-        addFence(L.latLng(lat, lng), rad);
-        if (!firstValid) firstValid = [lat, lng];
-      });
+    let firstValid = null;
 
-      if (firstValid) map.setView(firstValid, 16);
-    }
-  } else {
-    document.getElementById('fence-name-input').value = '';
-  }
+    perimeters.forEach(p => {
+      const lat = parseFloat(p.startPoint?.latitude);
+      const lng = parseFloat(p.startPoint?.longitude);
+      const rad = parseFloat(p.radius) || 120;
+      if (isNaN(lat) || isNaN(lng)) {
+        console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
+        return;
+      }
+      addFence(L.latLng(lat, lng), rad);
+      if (!firstValid) firstValid = [lat, lng];
+    });
 
-  setTimeout(() => map.invalidateSize(), 100);
+    if (firstValid) map.setView(firstValid, 16);
+  }, 150);
 }
 
 function addFence(latlng, radius) {
