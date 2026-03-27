@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoFence — Mapa Inteligente</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0b0e14;
+      --panel:    #12161f;
+      --border:   #1f2738;
+      --accent:   #e63946;
+      --accent2:  #ff9f1c;
+      --text:     #e8eaf0;
+      --muted:    #5a6278;
+      --success:  #4ade80;
+      --mono:     'Space Mono', monospace;
+      --sans:     'Syne', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    /* ── Layout ─────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 999;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg { width: 16px; fill: white; }
+
+    header h1 {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    .header-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--border);
+      padding: 3px 10px;
+      border-radius: 2px;
+      letter-spacing: .05em;
+    }
+
+    /* ── Sidebar ─────────────────────────────────── */
+    aside {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      z-index: 500;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* CEP input group */
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .cep-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: .85rem;
+      letter-spacing: .08em;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .cep-input:focus { border-color: var(--accent); }
+    .cep-input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #c8303b; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: var(--accent2);
+      border: 1px solid var(--accent2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,159,28,.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary.active {
+      background: var(--accent2);
+      color: #0b0e14;
+    }
+
+    /* Address result */
+    #addr-result {
+      font-size: .75rem;
+      line-height: 1.6;
+      color: var(--muted);
+      font-family: var(--mono);
+      min-height: 40px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+
+    #addr-result.ok { color: var(--success); border-color: rgba(74,222,128,.3); }
+    #addr-result.err { color: var(--accent); border-color: rgba(230,57,70,.3); }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Coordinates card */
+    .coord-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .coord-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .coord-axis {
+      font-family: var(--mono);
+      font-size: .7rem;
+      font-weight: 700;
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .coord-axis.x { background: rgba(230,57,70,.2); color: var(--accent); }
+    .coord-axis.y { background: rgba(255,159,28,.2); color: var(--accent2); }
+
+    .coord-label {
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      min-width: 60px;
+    }
+
+    .coord-value {
+      font-family: var(--mono);
+      font-size: .85rem;
+      color: var(--text);
+      letter-spacing: .04em;
+      transition: color .2s;
+    }
+
+    .coord-value.flash { color: var(--success); }
+
+    /* Radius row */
+    .radius-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .radius-label {
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    #radius-val {
+      font-family: var(--mono);
+      font-size: .85rem;
+      color: var(--text);
+    }
+
+    /* Hint */
+    .hint {
+      font-size: .7rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      line-height: 1.6;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+    }
+
+    .hint strong { color: var(--accent2); }
+
+    /* Status dot */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .dot.active { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+    .status-text {
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    /* ── Map ──────────────────────────────────────── */
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #0b0e14;
+    }
+
+    /* Custom Leaflet dark override */
+    .leaflet-container {
+      font-family: var(--sans);
+      background: #0e1117 !important;
+    }
+
+    /* Resize handle visual */
+    .resize-handle {
+      cursor: ew-resize;
+    }
+
+    /* Loading spinner on btn */
+    .btn.loading { pointer-events: none; opacity: .6; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    </div>
+    <h1>Geo<span>Fence</span></h1>
+    <span class="header-badge">v1.0 — LEAFLET</span>
+  </header>
+
+  <!-- Sidebar -->
+  <aside>
+
+    <!-- CEP Section -->
+    <div>
+      <p class="section-label">Localização / CEP</p>
+      <div class="input-group">
+        <input id="cep-input" class="cep-input" type="text" placeholder="00000-000" maxlength="9" />
+        <button id="btn-search" class="btn btn-primary">IR</button>
+      </div>
+      <div style="height:10px"></div>
+      <div id="addr-result">Digite um CEP para iniciar.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Cerca Section -->
+    <div>
+      <p class="section-label">Geofence</p>
+      <button id="btn-fence" class="btn btn-secondary">＋ Add Cerca</button>
+      <div style="height:12px"></div>
+      <div class="status-row">
+        <div class="dot" id="fence-dot"></div>
+        <span class="status-text" id="fence-status">Nenhuma cerca ativa</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Coordinates -->
+    <div>
+      <p class="section-label">Centro da Cerca</p>
+      <div class="coord-card">
+        <div class="coord-row">
+          <span class="coord-axis x">X</span>
+          <span class="coord-label">Longitude</span>
+          <span class="coord-value" id="coord-x">—</span>
+        </div>
+        <div class="coord-row">
+          <span class="coord-axis y">Y</span>
+          <span class="coord-label">Latitude</span>
+          <span class="coord-value" id="coord-y">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="radius-row">
+          <span class="radius-label">Raio (m)</span>
+          <span id="radius-val">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Hint -->
+    <div class="hint">
+      <strong>Como usar:</strong><br/>
+      1. Busque um CEP.<br/>
+      2. Clique em <strong>Add Cerca</strong>.<br/>
+      3. Clique no mapa para posicionar.<br/>
+      4. <strong>Scroll</strong> sobre a cerca para ajustar o raio.<br/>
+      5. <strong>Arraste</strong> para reposicionar.
+    </div>
+
+  </aside>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+</div>
+
+<script>
+function initApp() {
+// ─────────────────────────────────────────────────
+//  MAP INIT
+// ─────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [-15.7934, -47.8823],
+  zoom: 5,
+  zoomControl: true,
+});
+
+// OpenStreetMap tiles
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19,
+}).addTo(map);
+
+// ─────────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────────
+let fenceMode    = false;   // awaiting map click to place circle
+let fenceCircle  = null;    // Leaflet circle instance
+let isDragging   = false;
+let dragStart    = null;    // { latlng, center }
+let isResizing   = false;
+let resizeStartPixel = null;
+let resizeStartRadius = 120;
+
+// ─────────────────────────────────────────────────
+//  CEP SEARCH
+// ─────────────────────────────────────────────────
+const cepInput   = document.getElementById('cep-input');
+const btnSearch  = document.getElementById('btn-search');
+const addrResult = document.getElementById('addr-result');
+
+function formatCep(v) {
+  v = v.replace(/\D/g, '').slice(0, 8);
+  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5);
+  return v;
+}
+
+cepInput.addEventListener('input', () => {
+  cepInput.value = formatCep(cepInput.value);
+});
+
+cepInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnSearch.click();
+});
+
+btnSearch.addEventListener('click', async () => {
+  const cep = cepInput.value.replace(/\D/g, '');
+  if (cep.length !== 8) {
+    setAddr('CEP inválido. Use 8 dígitos.', 'err');
+    return;
+  }
+
+  btnSearch.classList.add('loading');
+  btnSearch.textContent = '...';
+  setAddr('Buscando...', '');
+
+  try {
+    // ViaCEP for address info
+    const res  = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await res.json();
+
+    if (data.erro) {
+      setAddr('CEP não encontrado.', 'err');
+      return;
+    }
+
+    const query = encodeURIComponent(`${data.logradouro || ''} ${data.bairro || ''} ${data.localidade} ${data.uf} Brasil`);
+    const geo   = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+    const gdata = await geo.json();
+
+    if (!gdata.length) {
+      setAddr(`${data.localidade} - ${data.uf}\nCoordenadas não localizadas.`, 'err');
+      return;
+    }
+
+    const lat = parseFloat(gdata[0].lat);
+    const lng = parseFloat(gdata[0].lon);
+
+    map.flyTo([lat, lng], 16, { duration: 1.4 });
+
+    const addr = [data.logradouro, data.bairro, data.localidade, data.uf]
+      .filter(Boolean).join(', ');
+    setAddr(addr, 'ok');
+
+  } catch {
+    setAddr('Erro de conexão.', 'err');
+  } finally {
+    btnSearch.classList.remove('loading');
+    btnSearch.textContent = 'IR';
+  }
+});
+
+function setAddr(txt, cls) {
+  addrResult.textContent = txt;
+  addrResult.className   = cls;
+}
+
+// ─────────────────────────────────────────────────
+//  FENCE MODE TOGGLE
+// ─────────────────────────────────────────────────
+const btnFence   = document.getElementById('btn-fence');
+const fenceDot   = document.getElementById('fence-dot');
+const fenceStatus= document.getElementById('fence-status');
+
+btnFence.addEventListener('click', () => {
+  if (fenceCircle) {
+    // Remove existing fence
+    map.removeLayer(fenceCircle);
+    fenceCircle = null;
+    resetCoords();
+    fenceDot.classList.remove('active');
+    fenceStatus.textContent = 'Nenhuma cerca ativa';
+  }
+
+  fenceMode = !fenceMode;
+
+  if (fenceMode) {
+    btnFence.classList.add('active');
+    btnFence.textContent = '× Cancelar';
+    map.getContainer().style.cursor = 'crosshair';
+    fenceStatus.textContent = 'Clique no mapa para posicionar…';
+  } else {
+    deactivateFenceMode();
+  }
+});
+
+function deactivateFenceMode() {
+  fenceMode = false;
+  btnFence.classList.remove('active');
+  btnFence.textContent = '＋ Add Cerca';
+  map.getContainer().style.cursor = '';
+}
+
+// ─────────────────────────────────────────────────
+//  PLACE CIRCLE ON MAP CLICK
+// ─────────────────────────────────────────────────
+map.on('click', (e) => {
+  if (!fenceMode) return;
+
+  if (fenceCircle) map.removeLayer(fenceCircle);
+
+  fenceCircle = L.circle(e.latlng, {
+    radius:      120,
+    color:       '#e63946',
+    weight:      2.5,
+    opacity:     1,
+    fillOpacity: 0,
+    interactive: true,
+  }).addTo(map);
+
+  updateCoords(e.latlng, 120);
+  fenceDot.classList.add('active');
+  fenceStatus.textContent = 'Cerca ativa';
+  deactivateFenceMode();
+
+  // Attach circle events
+  attachCircleEvents(fenceCircle);
+});
+
+// ─────────────────────────────────────────────────
+//  CIRCLE INTERACTION — drag + resize
+// ─────────────────────────────────────────────────
+function attachCircleEvents(circle) {
+  const el = circle.getElement?.() ?? circle._path;
+  if (!el) {
+    // Retry once element is ready
+    setTimeout(() => attachCircleEvents(circle), 100);
+    return;
+  }
+
+  el.style.cursor = 'grab';
+
+  // ── Drag ──────────────────────────────────────
+  el.addEventListener('mousedown', startDrag);
+  el.addEventListener('touchstart', startDragTouch, { passive: false });
+
+  // ── Scroll resize ─────────────────────────────
+  el.addEventListener('wheel', onWheel, { passive: false });
+}
+
+function startDrag(e) {
+  if (e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  isDragging = true;
+  map.dragging.disable();
+
+  dragStart = {
+    pixel:  { x: e.clientX, y: e.clientY },
+    center: fenceCircle.getLatLng(),
+  };
+
+  const el = fenceCircle.getElement?.() ?? fenceCircle._path;
+  if (el) el.style.cursor = 'grabbing';
+
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup',   stopDrag);
+}
+
+function startDragTouch(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  if (!e.touches[0]) return;
+
+  isDragging = true;
+  map.dragging.disable();
+
+  dragStart = {
+    pixel:  { x: e.touches[0].clientX, y: e.touches[0].clientY },
+    center: fenceCircle.getLatLng(),
+  };
+
+  document.addEventListener('touchmove',  onDragMoveTouch, { passive: false });
+  document.addEventListener('touchend',   stopDrag);
+}
+
+function onDragMove(e) {
+  if (!isDragging || !fenceCircle) return;
+  moveFence(e.clientX, e.clientY);
+}
+
+function onDragMoveTouch(e) {
+  e.preventDefault();
+  if (!isDragging || !fenceCircle || !e.touches[0]) return;
+  moveFence(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function moveFence(cx, cy) {
+  const dx = cx - dragStart.pixel.x;
+  const dy = cy - dragStart.pixel.y;
+
+  const startPx  = map.latLngToContainerPoint(dragStart.center);
+  const newPx    = L.point(startPx.x + dx, startPx.y + dy);
+  const newLatLng= map.containerPointToLatLng(newPx);
+
+  fenceCircle.setLatLng(newLatLng);
+  updateCoords(newLatLng, fenceCircle.getRadius());
+}
+
+function stopDrag() {
+  if (!isDragging) return;
+  isDragging = false;
+  map.dragging.enable();
+
+  const el = fenceCircle?.getElement?.() ?? fenceCircle?._path;
+  if (el) el.style.cursor = 'grab';
+
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup',   stopDrag);
+  document.removeEventListener('touchmove', onDragMoveTouch);
+  document.removeEventListener('touchend',  stopDrag);
+}
+
+// ── Scroll resize ──────────────────────────────
+function onWheel(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!fenceCircle) return;
+
+  const delta = e.deltaY < 0 ? 10 : -10;
+  const newR  = Math.max(20, fenceCircle.getRadius() + delta);
+  fenceCircle.setRadius(newR);
+  updateCoords(fenceCircle.getLatLng(), newR);
+}
+
+// ─────────────────────────────────────────────────
+//  COORDS UI
+// ─────────────────────────────────────────────────
+const coordX   = document.getElementById('coord-x');
+const coordY   = document.getElementById('coord-y');
+const radiusVal= document.getElementById('radius-val');
+
+function updateCoords(latlng, radius) {
+  coordX.textContent = latlng.lng.toFixed(6);
+  coordY.textContent = latlng.lat.toFixed(6);
+  radiusVal.textContent = `${Math.round(radius)} m`;
+
+  // Flash animation
+  [coordX, coordY].forEach(el => {
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 400);
+  });
+}
+
+function resetCoords() {
+  coordX.textContent = '—';
+  coordY.textContent = '—';
+  radiusVal.textContent = '—';
+}
+} // end initApp
+
+// ── Dynamic Leaflet loader ──────────────────────
+(function loadLeaflet() {
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.onload = () => initApp();
+  script.onerror = () => {
+    document.getElementById('map').innerHTML =
+      '<p style="color:#e63946;padding:20px;font-family:monospace">Erro ao carregar Leaflet. Verifique sua conexão.</p>';
+  };
+  document.body.appendChild(script);
+})();
+</script>
+</body>
+</html>
