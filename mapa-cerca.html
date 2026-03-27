@@ -601,6 +601,7 @@ async function editFence(fence) {
 
   try {
     const detail = await apiFetch(`/hcm/pontomobile/entities/fence/${fence.id}`);
+    console.log('[API] Detalhe da cerca:', JSON.stringify(detail, null, 2));
     editingFence = detail;
     navigate('map', { label: `Editando: ${detail.name || 'Cerca'}`, fence: detail });
   } catch (err) {
@@ -781,22 +782,25 @@ function setupMapEditor(fence) {
     const perimeters = Array.isArray(fence.perimeters) && fence.perimeters.length
       ? fence.perimeters
       : (fence.latitude && fence.longitude
-          ? [{ latitude: fence.latitude, longitude: fence.longitude, radius: fence.radius }]
+          ? [{ startPoint: { latitude: fence.latitude, longitude: fence.longitude }, radius: fence.radius }]
           : []);
 
     if (perimeters.length) {
+      let firstValid = null;
+
       perimeters.forEach(p => {
-        const lat = parseFloat(p.latitude);
-        const lng = parseFloat(p.longitude);
+        const lat = parseFloat(p.startPoint?.latitude);
+        const lng = parseFloat(p.startPoint?.longitude);
         const rad = parseFloat(p.radius) || 120;
-        if (!isNaN(lat) && !isNaN(lng)) {
-          addFence(L.latLng(lat, lng), rad);
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
+          return;
         }
+        addFence(L.latLng(lat, lng), rad);
+        if (!firstValid) firstValid = [lat, lng];
       });
 
-      // Center map on first perimeter
-      const first = perimeters[0];
-      map.setView([parseFloat(first.latitude), parseFloat(first.longitude)], 16);
+      if (firstValid) map.setView(firstValid, 16);
     }
   } else {
     document.getElementById('fence-name-input').value = '';
@@ -935,23 +939,34 @@ async function saveFence() {
   btn.disabled = true; btn.textContent = 'Salvando…';
 
   try {
-    // Usa a primeira cerca do mapa como referência principal
-    const f = fences[0];
-    const payload = {
-      name,
-      latitude:  f.latlng.lat,
-      longitude: f.latlng.lng,
-      radius:    Math.round(f.radius),
-    };
+    // Monta perimeters preservando IDs existentes ao editar
+    const existingPerimeters = editingFence?.perimeters || [];
+
+    const perimeters = fences.map((f, i) => {
+      const existing = existingPerimeters[i];
+      return {
+        ...(existing?.id      ? { id: existing.id }           : {}),
+        ...(existing?.name    ? { name: existing.name }       : { name: name }),
+        type: 'CIRCLE',
+        radius: Math.round(f.radius),
+        startPoint: {
+          ...(existing?.startPoint?.id ? { id: existing.startPoint.id } : {}),
+          latitude:  f.latlng.lat,
+          longitude: f.latlng.lng,
+          _discriminator: 'location',
+        },
+        _discriminator: 'perimeter',
+      };
+    });
+
+    const payload = { name, perimeters };
 
     if (editingFence?.id) {
-      // PUT / PATCH para edição
       await apiFetch(`/hcm/pontomobile/entities/fence/${editingFence.id}`, {
         method: 'PUT', body: JSON.stringify(payload),
       });
       showToast('Cerca atualizada com sucesso!', 'ok');
     } else {
-      // POST para criação
       await apiFetch('/hcm/pontomobile/entities/fence', {
         method: 'POST', body: JSON.stringify(payload),
       });
