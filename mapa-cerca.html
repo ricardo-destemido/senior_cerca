@@ -559,6 +559,9 @@ async function loadFences(page) {
       return;
     }
 
+    // Store rows in a closure-accessible variable for button handlers
+    window._tableRows = rows;
+
     tbody.innerHTML = rows.map((f, i) => `
       <tr>
         <td class="td-mono">${offset + i + 1}</td>
@@ -568,11 +571,20 @@ async function loadFences(page) {
         <td class="td-mono">${f.radius    != null ? f.radius : '—'}</td>
         <td>
           <div class="td-actions">
-            <button class="btn btn-ghost btn-icon" onclick="editFence(${JSON.stringify(JSON.stringify(f))})">✏️ Editar</button>
-            <button class="btn btn-ghost btn-icon btn-danger-ghost" onclick="confirmDeleteFence(${JSON.stringify(JSON.stringify(f))})">🗑️ Excluir</button>
+            <button class="btn btn-ghost btn-icon"             data-idx="${i}" data-action="edit">✏️ Editar</button>
+            <button class="btn btn-ghost btn-icon btn-danger-ghost" data-idx="${i}" data-action="delete">🗑️ Excluir</button>
           </div>
         </td>
       </tr>`).join('');
+
+    // Attach handlers after DOM is updated
+    tbody.querySelectorAll('button[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fence = window._tableRows[parseInt(btn.dataset.idx)];
+        if (btn.dataset.action === 'edit')   editFence(fence);
+        if (btn.dataset.action === 'delete') confirmDeleteFence(fence);
+      });
+    });
 
     renderPagination(totalRecords);
 
@@ -582,16 +594,17 @@ async function loadFences(page) {
   }
 }
 
-function editFence(jsonStr) {
-  editingFence = JSON.parse(jsonStr);
+function editFence(fence) {
+  editingFence = fence;
   navigate('map', { label: `Editando: ${editingFence.name || 'Cerca'}`, fence: editingFence });
 }
 
-let pendingDeleteId = null;
+let pendingDeleteId   = null;
+let pendingDeleteName = null;
 
-function confirmDeleteFence(jsonStr) {
-  const fence = JSON.parse(jsonStr);
-  pendingDeleteId = fence.id;
+function confirmDeleteFence(fence) {
+  pendingDeleteId   = fence.id;
+  pendingDeleteName = fence.name;
   document.getElementById('confirm-fence-name').textContent = fence.name || 'sem nome';
   document.getElementById('confirm-overlay').classList.add('show');
 }
