@@ -199,8 +199,11 @@
     aside {
       background: var(--panel); border-right: 1px solid var(--border);
       padding: 20px 16px; display: flex; flex-direction: column; gap: 18px;
-      overflow: hidden; z-index: 500; height: 100%;
+      overflow-y: auto; z-index: 500; height: 100%; box-sizing: border-box;
     }
+
+    .list-section { display: flex; flex-direction: column; gap: 8px; }
+    #fence-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 180px; min-height: 40px; }
 
     .section-label {
       font-family: var(--mono); font-size: .6rem; letter-spacing: .15em;
@@ -229,8 +232,6 @@
     .btn-secondary:hover:not(:disabled) { background: rgba(255,159,28,.08); transform: translateY(-1px); }
     .btn-secondary.active { background: var(--accent2); color: #0b0e14; }
 
-    .list-section { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden; }
-    #fence-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; min-height: 0; }
     .fence-empty { font-family: var(--mono); font-size: .7rem; color: var(--muted); text-align: center; padding: 16px 0; }
 
     .fence-item {
@@ -968,7 +969,7 @@ async function saveFence() {
 
     if (editingFence?.id) {
       await apiFetch(`/hcm/pontomobile/entities/fence/${editingFence.id}`, {
-        method: 'PUT', body: JSON.stringify(payload),
+        method: 'PATCH', body: JSON.stringify(payload),
       });
       showToast('Cerca atualizada com sucesso!', 'ok');
     } else {
