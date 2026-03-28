@@ -776,9 +776,10 @@ function initMap() {
 }
 
 function setupMapEditor(fence) {
-  // Clear existing circles
-  fences.forEach(f => map.removeLayer(f.circle));
+  // Clear existing circles and reset list immediately
+  fences.forEach(f => { try { map.removeLayer(f.circle); } catch(_) {} });
   fences = []; selectedId = null; colorIndex = 0;
+  renderFenceList();
   deactivateFenceMode();
   setAddr('Digite um CEP para navegar no mapa.', '');
   document.getElementById('cep-input').value = '';
