@@ -951,14 +951,16 @@ async function saveFence() {
     const perimeters = fences.map((f, i) => {
       const existing = existingPerimeters[i];
       return {
-        ...(existing?.id      ? { id: existing.id }           : {}),
-        ...(existing?.name    ? { name: existing.name }       : { name: name }),
-        type: 'CIRCLE',
+        ...(existing?.id   ? { id: existing.id }     : {}),
+        ...(existing?.name ? { name: existing.name } : { name: name }),
+        type:   'CIRCLE',
+        color:  existing?.color  || 'red',
         radius: Math.round(f.radius),
         startPoint: {
           ...(existing?.startPoint?.id ? { id: existing.startPoint.id } : {}),
-          latitude:  f.latlng.lat,
-          longitude: f.latlng.lng,
+          latitude:     f.latlng.lat,
+          longitude:    f.latlng.lng,
+          dateAndTime:  existing?.startPoint?.dateAndTime || new Date().toISOString(),
           _discriminator: 'location',
         },
         _discriminator: 'perimeter',
