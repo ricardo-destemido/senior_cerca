@@ -311,15 +311,6 @@
       <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
     <h1><a href="https://destemidosistemas.com.br/" target="_blank">Destemido Sistemas</a></h1>
-
-    <div class="breadcrumb" id="breadcrumb" style="margin-left:16px;">
-      <span class="breadcrumb-item active" data-view="list">Cercas</span>
-    </div>
-
-    <div class="header-right">
-      <span class="badge">GEOFENCE — LEAFLET</span>
-      <span id="user-badge"></span>
-    </div>
   </header>
 
   <!-- ══════════════════════════════════════
@@ -527,7 +518,8 @@ async function apiFetch(path, options = {}) {
   };
   const res = await fetch(`${base}${path}`, { ...options, headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 // ══════════════════════════════════════════════════
