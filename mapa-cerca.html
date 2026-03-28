@@ -396,6 +396,9 @@
         <div id="fence-list">
           <p class="fence-empty">Nenhuma cerca adicionada.</p>
         </div>
+        <div id="fence-list-error" style="display:none; font-family:var(--mono); font-size:.7rem; color:var(--accent); background:rgba(230,57,70,.08); border:1px solid rgba(230,57,70,.3); border-radius:4px; padding:8px 10px;">
+          ⚠ Adicione ao menos uma cerca no mapa antes de salvar.
+        </div>
         <button class="btn-clear" id="btn-clear-all">✕ Remover todas</button>
       </div>
 
@@ -531,6 +534,9 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 
 document.getElementById('btn-new').addEventListener('click', () => {
   editingFence = null;
+  // Limpa cercas anteriores antes de abrir o editor
+  fences.forEach(f => map && map.removeLayer(f.circle));
+  fences = []; selectedId = null; colorIndex = 0;
   navigate('map', { label: 'Nova Cerca' });
 });
 
@@ -840,10 +846,12 @@ function setAddr(txt, cls) {
 }
 
 function renderFenceList() {
-  const list  = document.getElementById('fence-list');
-  const count = document.getElementById('fence-count');
+  const list   = document.getElementById('fence-list');
+  const count  = document.getElementById('fence-count');
+  const errEl  = document.getElementById('fence-list-error');
   if (!list) return;
   count.textContent = fences.length;
+  if (errEl) errEl.style.display = 'none';
   if (!fences.length) { list.innerHTML = '<p class="fence-empty">Nenhuma cerca adicionada.</p>'; return; }
   list.innerHTML = '';
   fences.forEach((f, i) => {
@@ -939,7 +947,13 @@ function onUp() {
 async function saveFence() {
   const name = document.getElementById('fence-name-input').value.trim();
   if (!name) { showToast('Informe um nome para a cerca.', 'err'); return; }
-  if (!fences.length) { showToast('Adicione ao menos uma cerca no mapa.', 'err'); return; }
+
+  if (!fences.length) {
+    const errEl = document.getElementById('fence-list-error');
+    if (errEl) { errEl.style.display = 'block'; setTimeout(() => errEl.style.display = 'none', 4000); }
+    showToast('Adicione ao menos uma cerca no mapa.', 'err');
+    return;
+  }
 
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Salvando…';
