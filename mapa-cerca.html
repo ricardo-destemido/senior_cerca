@@ -328,16 +328,12 @@
       <table id="fence-table">
         <thead>
           <tr>
-            <th>#</th>
             <th>Nome</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>Raio (m)</th>
             <th style="text-align:right">Ações</th>
           </tr>
         </thead>
         <tbody id="table-body">
-          <tr><td colspan="6"><div class="table-state"><div class="spinner"></div>Aguardando autenticação SeniorX…</div></td></tr>
+          <tr><td colspan="2"><div class="table-state"><div class="spinner"></div>Aguardando autenticação SeniorX…</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -562,24 +558,20 @@ async function loadFences(page) {
     totalRecords = data.totalElements ?? data.total ?? rows.length;
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="table-state">Nenhuma cerca encontrada.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="2"><div class="table-state">Nenhuma cerca encontrada.</div></td></tr>`;
       renderPagination(0);
       return;
     }
 
-    // Store rows in a closure-accessible variable for button handlers
+    // Store rows preserving API order
     window._tableRows = rows;
 
     tbody.innerHTML = rows.map((f, i) => `
       <tr>
-        <td class="td-mono">${offset + i + 1}</td>
         <td class="td-name">${esc(f.name || '—')}</td>
-        <td class="td-mono">${f.latitude  != null ? Number(f.latitude).toFixed(6)  : '—'}</td>
-        <td class="td-mono">${f.longitude != null ? Number(f.longitude).toFixed(6) : '—'}</td>
-        <td class="td-mono">${f.radius    != null ? f.radius : '—'}</td>
         <td>
           <div class="td-actions">
-            <button class="btn btn-ghost btn-icon"             data-idx="${i}" data-action="edit">✏️ Editar</button>
+            <button class="btn btn-ghost btn-icon" data-idx="${i}" data-action="edit">✏️ Editar</button>
             <button class="btn btn-ghost btn-icon btn-danger-ghost" data-idx="${i}" data-action="delete">🗑️ Excluir</button>
           </div>
         </td>
@@ -598,7 +590,7 @@ async function loadFences(page) {
 
   } catch (err) {
     console.error('[API] Erro ao carregar cercas:', err);
-    tbody.innerHTML = `<tr><td colspan="6"><div class="table-state">Erro ao carregar dados: ${err.message}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="2"><div class="table-state">Erro ao carregar dados: ${err.message}</div></td></tr>`;
   }
 }
 
