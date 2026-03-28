@@ -478,6 +478,14 @@ window.addEventListener('message', (event) => {
   loadFences(0);
 });
 
+// ── UUID v4 generator ────────────────────────────
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 // ══════════════════════════════════════════════════
 //  ROUTING (SPA)
 // ══════════════════════════════════════════════════
@@ -966,13 +974,13 @@ async function saveFence() {
     const perimeters = fences.map((f, i) => {
       const existing = existingPerimeters[i];
       return {
-        ...(existing?.id   ? { id: existing.id }     : {}),
-        ...(existing?.name ? { name: existing.name } : { name: name }),
+        id:     existing?.id             || uuid(),
+        name:   existing?.name           || name,
         type:   'CIRCLE',
-        color:  existing?.color  || 'red',
+        color:  existing?.color          || 'red',
         radius: Math.round(f.radius),
         startPoint: {
-          ...(existing?.startPoint?.id ? { id: existing.startPoint.id } : {}),
+          id:           existing?.startPoint?.id          || uuid(),
           latitude:     f.latlng.lat,
           longitude:    f.latlng.lng,
           dateAndTime:  existing?.startPoint?.dateAndTime || new Date().toISOString(),
