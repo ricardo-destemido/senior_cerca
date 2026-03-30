@@ -507,9 +507,13 @@ async function apiFetch(path, options = {}) {
     ...(seniorToken ? { 'Authorization': `Bearer ${seniorToken}` } : {}),
     ...(options.headers || {}),
   };
-  const res = await fetch(`${base}${path}`, { ...options, headers });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const res  = await fetch(`${base}${path}`, { ...options, headers });
   const text = await res.text();
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try { const json = JSON.parse(text); if (json.message) message = json.message; } catch (_) {}
+    throw new Error(message);
+  }
   return text ? JSON.parse(text) : null;
 }
 
@@ -642,7 +646,8 @@ document.getElementById('confirm-ok').addEventListener('click', async () => {
     loadFences(currentPage);
   } catch (err) {
     console.error('[API] Erro ao excluir cerca:', err);
-    showToast(`Erro ao excluir: ${err.message}`, 'err');
+    document.getElementById('confirm-overlay').classList.remove('show');
+    showToast(err.message, 'err');
   } finally {
     btn.disabled = false; btn.textContent = 'Excluir';
     pendingDeleteId = null;
@@ -998,10 +1003,11 @@ async function saveFence() {
 // ══════════════════════════════════════════════════
 let toastTimer = null;
 function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'show ' + type;
+  const t        = document.getElementById('toast');
+  const duration = type === 'err' ? 6000 : 3000;
+  t.textContent  = msg; t.className = 'show ' + type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  toastTimer = setTimeout(() => { t.className = ''; }, duration);
 }
 
 // ══════════════════════════════════════════════════
