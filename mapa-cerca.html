@@ -394,9 +394,6 @@ window.addEventListener('message', (event) => {
   servicesUrl  = data.servicesUrl || 'https://platform.senior.com.br/t/senior.com.br/bridge/1.0/rest/';
   seniorToken  = access_token;
 
-  console.log('[SeniorX] Dados recebidos:', data);
-  console.log('[SeniorX] access_token:', access_token);
-  console.log('[SeniorX] servicesUrl:', servicesUrl);
 
   // Load first page
   loadFences(0);
@@ -531,7 +528,6 @@ async function loadFences(page) {
     renderPagination(totalRecords);
 
   } catch (err) {
-    console.error('[API] Erro ao carregar cercas:', err);
     tbody.innerHTML = `<tr><td colspan="2"><div class="table-state">Erro ao carregar dados: ${err.message}</div></td></tr>`;
   }
 }
@@ -543,11 +539,9 @@ async function editFence(fence) {
 
   try {
     const detail = await apiFetch(`/hcm/pontomobile/entities/fence/${fence.id}`);
-    console.log('[API] Detalhe da cerca:', JSON.stringify(detail, null, 2));
     editingFence = detail;
     navigate('map', { label: `Editando: ${detail.name || 'Cerca'}`, fence: detail });
   } catch (err) {
-    console.error('[API] Erro ao carregar detalhe da cerca:', err);
     showToast(`Erro ao carregar cerca: ${err.message}`, 'err');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '✏️ Editar'; }
@@ -588,7 +582,6 @@ document.getElementById('confirm-ok').addEventListener('click', async () => {
     showToast('Cerca excluída com sucesso!', 'ok');
     loadFences(currentPage);
   } catch (err) {
-    console.error('[API] Erro ao excluir cerca:', err);
     document.getElementById('confirm-overlay').classList.remove('show');
     showToast(err.message, 'err');
   } finally {
@@ -750,15 +743,12 @@ function setupMapEditor(fence) {
       const lng = parseFloat(p.startPoint?.longitude);
       const rad = parseFloat(p.radius) || 120;
       if (isNaN(lat) || isNaN(lng)) {
-        console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
         return;
       }
       addFence(L.latLng(lat, lng), rad, true, p.color || null);
       if (!firstValid) firstValid = [lat, lng];
     });
 
-    console.log('[MapEditor] Fences após população:', fences.length, fences);
-    console.log('[MapEditor] #fence-list element:', document.getElementById('fence-list'));
     renderFenceList(); // render único após todos os perímetros
 
     if (firstValid) map.setView(firstValid, 16);
@@ -946,7 +936,6 @@ async function saveFence() {
     setTimeout(() => navigate('list'), 1200);
 
   } catch (err) {
-    console.error('[API] Erro ao salvar:', err);
     showToast(`Erro ao salvar: ${err.message}`, 'err');
   } finally {
     btn.disabled = false; btn.textContent = '💾 Salvar';
