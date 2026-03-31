@@ -284,6 +284,12 @@
       <div id="pagination-btns" style="display:flex;gap:6px;align-items:center;"></div>
     </div>
 
+    <div style="text-align:center; padding: 4px 0; flex-shrink:0;">
+      <small style="color:var(--muted); font-size:.72rem;">
+        By: <a href="https://destemidosistemas.com.br/" target="_blank" style="color:var(--accent); text-decoration:none;">Destemido Sistemas</a>
+      </small>
+    </div>
+
   </div>
 
   <!-- ══════════════════════════════════════
@@ -334,17 +340,7 @@
 
       <div class="save-bar">
         <button class="btn btn-ghost" id="btn-back" style="flex:1;">← Voltar</button>
-        <button class="btn btn-primary" id="btn-save" style="flex:2;">💾 Salvar</button>
-      </div>
-
-      <div class="hint">
-        <strong>Como usar:</strong><br/>
-        1. Dê um nome à cerca.<br/>
-        2. Busque um CEP p/ navegar.<br/>
-        3. Clique em <strong>Add Cerca</strong>.<br/>
-        4. Clique no mapa para posicionar.<br/>
-        5. <strong>Scroll</strong> para ajustar raio.<br/>
-        6. <strong>Arraste</strong> para reposicionar.
+        <button class="btn btn-primary" id="btn-save" style="flex:1;">💾 Salvar</button>
       </div>
 
       <div style="margin-top:auto; padding-top:8px; flex-shrink:0; text-align:center; border-top:1px solid var(--border);">
@@ -646,7 +642,16 @@ function esc(str) {
 // ══════════════════════════════════════════════════
 //  MAP VIEW
 // ══════════════════════════════════════════════════
-const COLORS = ['#e63946','#ff9f1c','#4ade80','#60a5fa','#c084fc','#f472b6','#fb923c','#34d399'];
+const COLORS = [
+  { name: 'red',    hex: '#e53935' },
+  { name: 'orange', hex: '#fb8c00' },
+  { name: 'yellow', hex: '#fdd835' },
+  { name: 'green',  hex: '#43a047' },
+  { name: 'teal',   hex: '#00897b' },
+  { name: 'blue',   hex: '#1e88e5' },
+  { name: 'purple', hex: '#8e24aa' },
+  { name: 'pink',   hex: '#e91e63' },
+];
 let colorIndex  = 0;
 let map         = null;
 let fences      = [];
@@ -748,7 +753,7 @@ function setupMapEditor(fence) {
         console.warn('[MapEditor] Perímetro com coordenadas inválidas ignorado:', p);
         return;
       }
-      addFence(L.latLng(lat, lng), rad, true); // skipRender durante o loop
+      addFence(L.latLng(lat, lng), rad, true, p.color || null);
       if (!firstValid) firstValid = [lat, lng];
     });
 
@@ -760,12 +765,15 @@ function setupMapEditor(fence) {
   }, 150);
 }
 
-function addFence(latlng, radius, skipRender = false) {
-  const color  = COLORS[colorIndex % COLORS.length]; colorIndex++;
+function addFence(latlng, radius, skipRender = false, colorName = null) {
+  const entry  = colorName
+    ? (COLORS.find(c => c.name === colorName) || COLORS[colorIndex % COLORS.length])
+    : COLORS[colorIndex % COLORS.length];
+  colorIndex++;
   const circle = L.circle(latlng, {
-    radius, color, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
+    radius, color: entry.hex, weight: 2.5, opacity: 1, fillOpacity: 0, interactive: true,
   }).addTo(map);
-  const fence = { id: Date.now() + colorIndex, circle, color, latlng, radius };
+  const fence = { id: Date.now() + colorIndex, circle, color: entry.hex, colorName: entry.name, latlng, radius };
   fences.push(fence);
   attachCircleEvents(fence);
   selectedId = fence.id;
@@ -908,7 +916,7 @@ async function saveFence() {
         id:     existing?.id             || uuid(),
         name:   existing?.name           || name,
         type:   'CIRCLE',
-        color:  existing?.color          || 'red',
+        color:  f.colorName || existing?.color || 'red',
         radius: Math.round(f.radius),
         startPoint: {
           id:           existing?.startPoint?.id          || uuid(),
