@@ -808,7 +808,7 @@ function renderFenceList() {
         Raio:&nbsp;&nbsp;&nbsp;<span>${Math.round(f.radius)} m</span>
       </div>`;
     div.querySelector('.btn-delete').addEventListener('click', ev => { ev.stopPropagation(); deleteFenceItem(f.id); });
-    div.addEventListener('click', () => { selectedId = f.id; map.panTo(f.latlng); renderFenceList(); });
+    div.addEventListener('click', () => { selectedId = f.id; map.fitBounds(f.circle.getBounds(), { maxZoom: 19, padding: [40, 40] }); renderFenceList(); });
     list.appendChild(div);
   });
 }
